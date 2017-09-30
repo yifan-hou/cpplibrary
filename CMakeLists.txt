@@ -10,13 +10,14 @@ include_directories("${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}")
 ###########
 ## Build ##
 ###########
-# add_library(egm_comm 
-# 	"src/EGMClass.cpp" 
+add_library(SINGLETON
+	src/SINGLETON.cpp 
 # 	"src/PracticalSocket.cpp" 
 # 	"src/egm.pb.cc" 
-# 	"src/TimerLinux.cpp")
+# 	"src/TimerLinux.cpp"
+)
 
-# target_link_libraries(egm_comm	
+# target_link_libraries(SINGLETON	
 #     ${Boost_FILESYSTEM_LIBRARY}
 #     ${Boost_SYSTEM_LIBRARY}
 #     ${PROTOBUF_LIBRARY}
@@ -26,7 +27,12 @@ include_directories("${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}")
 #############
 ## Install ##
 #############
+# headers
 install(DIRECTORY include/
     DESTINATION /usr/local/include/
     )
 
+# binaries
+install(TARGETS SINGLETON
+    DESTINATION /usr/local/lib/yifanlibrary
+    )

@@ -8,7 +8,7 @@
 #include <stdarg.h>
 
 
-namespace YIFAN
+namespace YF
 {
 	/////////////////////////////////////////////////////////////////////////
 	//                   types and static variables 

@@ -3,7 +3,6 @@
 #define _YIFAN_ULTILITIES_H_
 
 #include <math.h>
-#include <conio.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -22,38 +21,6 @@ namespace YF
 	//                          print
 	/////////////////////////////////////////////////////////////////////////
 
-	static void print_header(const char *info)
-	{
-		printf("**************************************************************************\n");
-		printf("\t\t");
-		printf(info);
-		printf("**************************************************************************\n");
-	}
-
-	static void PressEnterToContinue()
-	{
-		int c;
-		printf( "Press ENTER to continue... " );
-		fflush( stdout );
-		do c = getchar(); while ((c != '\n') && (c != EOF));
-	}
-
-
-	static int error (const char *fmt, ...)
-	{
-		printf("\nERROR INFO: \n");
-
-		// The following four lines do the job of
-		// printf(fmt,...);
-		va_list args;
-		va_start(args,fmt);
-		int rt = vprintf(fmt,args);
-		va_end(args);
-
-		PressEnterToContinue();
-		return rt;
-	}
-
 	 
 	/////////////////////////////////////////////////////////////////////////
 	//                          scalar
@@ -68,9 +35,8 @@ namespace YF
 	}
 
 	/////////////////////////////////////////////////////////////////////////
-	//                          vector
+	//                          vector&array
 	/////////////////////////////////////////////////////////////////////////
-
 
 	static void buf_insert(const double ele, const int size, double * buf)
 	{
@@ -79,6 +45,22 @@ namespace YF
 			buf[size - i] = buf[size - 1 - i];
 		}
 		buf[0] = ele;
+	}
+
+	static void copyArray(const float *src, float *dest, int dim)
+	{
+	    for(int i = 0; i<dim; i++)
+	    {
+	        dest[i] = src[i];
+	    }
+	}
+
+	static void setArray(float *array, float value, int dim)
+	{
+	    for(int i=0; i<dim; i++)
+	    {
+	        array[i] = value;
+	    }
 	}
 
 	static double vec_max(const double * vec, const int size)

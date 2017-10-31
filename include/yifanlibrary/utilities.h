@@ -2,10 +2,16 @@
 #ifndef _YIFAN_ULTILITIES_H_
 #define _YIFAN_ULTILITIES_H_
 
-#include <math.h>
-#include <stdio.h>
-#include <stdarg.h>
 
+#ifdef __cplusplus
+	#include <cmath>
+	#include <iostream>
+#else
+	#include <math.h>
+	#include <stdio.h>
+#endif
+ 
+// #include <stdarg.h>
 
 namespace YF
 {
@@ -18,10 +24,36 @@ namespace YF
 
 
 	/////////////////////////////////////////////////////////////////////////
-	//                          print
+	//                          iostream
 	/////////////////////////////////////////////////////////////////////////
+	void stream_array_in(ostream &st, double *array, int length)
+	{
+		for (int i = 0; i<length; i++)
+		{
+			st << array[i];
+			st << "\t";
+		}
+	}
 
-	 
+	void stream_array_in(ostream &st, float *array, int length)
+	{
+		for (int i = 0; i<length; i++)
+		{
+			st << array[i];
+			st << "\t";
+		}
+	}
+
+
+	void stream_array_in(ostream &st, int *array, int length)
+	{
+		for (int i = 0; i<length; i++)
+		{
+			st << array[i];
+			st << "\t";
+		}
+	}
+
 	/////////////////////////////////////////////////////////////////////////
 	//                          scalar
 	/////////////////////////////////////////////////////////////////////////
@@ -60,6 +92,15 @@ namespace YF
 	    for(int i=0; i<dim; i++)
 	    {
 	        array[i] = value;
+	    }
+	}
+
+	static void truncate(float *array, float max, float min, int dim)
+	{
+	    for(int i=0; i<dim; i++)
+	    {
+	    	array[i] = (array[i] > max)? max:array[i];
+	    	array[i] = (array[i] < min)? min:array[i];
 	    }
 	}
 

@@ -1,0 +1,654 @@
+#include "utilities.h"
+
+
+// Eigen
+#include <Eigen/Geometry>
+#include <Eigen/Dense>
+#include <Eigen/Core>
+#include <Eigen/SVD>
+#include <unsupported/Eigen/MatrixFunctions>
+
+namespace UT
+{
+  /////////////////////////////////////////////////////////////////////////
+  //                   types and variables
+  /////////////////////////////////////////////////////////////////////////
+  const static double kEpsilon = 1e-7;
+  const static float PIf = 3.1416f;
+  const static double PI = 3.1415926;
+
+  /////////////////////////////////////////////////////////////////////////
+  //                          iostream
+  /////////////////////////////////////////////////////////////////////////
+  void stream_array_in(std::ostream &st, double *array, int length)
+  {
+    for (int i = 0; i<length; i++)
+    {
+     st << array[i];
+     st << "\t";
+   }
+ }
+
+ void stream_array_in(std::ostream &st, float *array, int length)
+ {
+  for (int i = 0; i<length; i++)
+  {
+   st << array[i];
+   st << "\t";
+ }
+}
+
+
+void stream_array_in(std::ostream &st, int *array, int length)
+{
+  for (int i = 0; i<length; i++)
+  {
+   st << array[i];
+   st << "\t";
+ }
+}
+
+    /////////////////////////////////////////////////////////////////////////
+    //                          scalar
+    /////////////////////////////////////////////////////////////////////////
+
+void truncate(double *ele, const double _min, const double _max)
+{
+  if ( (*ele) > _max)
+    (*ele) = _max;
+  else if ( (*ele) < _min)
+    (*ele) = _min;
+}
+
+    /////////////////////////////////////////////////////////////////////////
+    //                          vector&array
+    /////////////////////////////////////////////////////////////////////////
+
+void buf_insert(const double ele, const int size, double * buf)
+{
+  for (int i = 1; i < size; ++i)
+  {
+    buf[size - i] = buf[size - 1 - i];
+  }
+  buf[0] = ele;
+}
+
+void copyArray(const float *src, float *dest, int dim)
+{
+  for(int i = 0; i<dim; i++)
+  {
+    dest[i] = src[i];
+  }
+}
+
+void copyArray(const double *src, double *dest, int dim)
+{
+  for(int i = 0; i<dim; i++)
+  {
+    dest[i] = src[i];
+  }
+}
+
+void setArray(float *array, float value, int dim)
+{
+ for(int i=0; i<dim; i++)
+ {
+   array[i] = value;
+ }
+}
+
+void truncate(float *array, float min, float max, int dim)
+{
+ for(int i=0; i<dim; i++)
+ {
+  array[i] = (array[i] > max)? max:array[i];
+  array[i] = (array[i] < min)? min:array[i];
+  }
+}
+
+double vec_max(const double * vec, const int size)
+{
+  double m = vec[0];
+  double t1;
+  for (int i = 0; i < size; ++i)
+  {
+   t1 = vec[i];
+   if (t1 > m) m = t1;
+ }
+ return m;
+}
+
+double vec_min(const double * vec, const int size)
+{
+  double m = vec[0];
+  double t1;
+  for (int i = 0; i < size; ++i)
+  {
+   t1 = vec[i];
+   if (t1 < m) m = t1;
+ }
+ return m;
+}
+
+double vec_mean(const double * vec, const int size)
+{
+  double sum = 0;
+  for (int i = 0; i < size; ++i)
+  {
+   sum += vec[i];
+ }
+ return sum/double(size);
+}
+
+
+double vec_slope(const double * x, const double * y,const int size)
+{
+ double avgX = vec_mean(x,size);
+ double avgY = vec_mean(y,size);
+
+ double numerator = 0.0;
+ double denominator = 0.0;
+
+ double xd = 0;
+ for(int i=0; i<size; ++i)
+ {
+  xd = x[i] - avgX;
+  numerator += (xd) * (y[i] - avgY);
+  denominator += xd * xd;
+}
+
+return numerator / denominator;
+}
+
+    // numerical differentiation with low pass filter
+    // input x, calculate dx/dt
+    // s/(as+1),
+double diff_LPF(const double xdold, const double xnew, const double xold, const double T,const double a)
+{
+  double As = exp(-T/a);
+  return As*xdold + (1 - As)*((xnew - xold)/T);
+}
+
+void truncate6f(Vector6f *v, float min, float max)
+{
+  for(int i=0; i<6; i++)
+  {
+    (*v)[i] = ((*v)[i] > max)? max:(*v)[i];
+    (*v)[i] = ((*v)[i] < min)? min:(*v)[i];
+  }
+}
+
+void truncate6d(Vector6d *v, double min, double max)
+{
+  for(int i=0; i<6; i++)
+  {
+    (*v)[i] = ((*v)[i] > max)? max:(*v)[i];
+    (*v)[i] = ((*v)[i] < min)? min:(*v)[i];
+  }
+}
+
+void truncate6d(Vector6d *v, const Vector6d &min, const Vector6d &max)
+{
+  for(int i=0; i<6; i++)
+  {
+    (*v)[i] = ((*v)[i] > max[i])? max[i]:(*v)[i];
+    (*v)[i] = ((*v)[i] < min[i])? min[i]:(*v)[i];
+  }
+}
+
+void stream_array_in6f(std::ostream &st, const Vector6f &array)
+{
+  for (int i = 0; i<6; i++)
+  {
+    st << array(i);
+    st << "\t";
+  }
+}
+void stream_array_in6d(std::ostream &st, const Vector6d &array)
+{
+  for (int i = 0; i<6; i++)
+  {
+    st << array(i);
+    st << "\t";
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////
+//                          Matrices
+/////////////////////////////////////////////////////////////////////////
+MatrixXd pseudoInverse(const MatrixXd &a,
+    double epsilon) {
+  if (a.norm() < epsilon) {
+    return  MatrixXd::Zero(a.cols(), a.rows());
+  } else {
+    Eigen::JacobiSVD< MatrixXd > svd(a ,Eigen::ComputeThinU | Eigen::ComputeThinV);
+    double tolerance = epsilon * std::max(a.cols(), a.rows()) *svd.singularValues().array().abs()(0);
+    return svd.matrixV() * (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
+  }
+}
+
+    /////////////////////////////////////////////////////////////////////////
+    //                          Robotics
+    /////////////////////////////////////////////////////////////////////////
+
+    /*  Frames/spaces:
+            W: world frame
+            T: current tool frame
+            So: set tool frame with offset
+            Tf: transformed generalized space
+        Quantities:
+            SE3: 4x4 homogeneous coordinates
+            se3: 6x1 twist coordinate of SE3
+            spt: 6x1 special twist: 3x1 position, 3x1 exponential coordinate for rotation
+            td: 6x1 time derivative of twist.
+            v: 6x1 velocity, either spatial or body
+
+            wrench: 6x1 wrench. Makes work with body velocity
+    */
+
+Matrix3d wedge(const Vector3d &v) {
+  Matrix3d v_wedge;
+  v_wedge << 0, -v(2), v(1),
+  v(2), 0, -v(0),
+  -v(1), v(0), 0;
+  return v_wedge;
+}
+
+Matrix4d wedge6(const Vector6d &t) {
+  Matrix4d t_wedge;
+  t_wedge <<   0,   -t(5),   t(4),  t(0),
+  t(5),     0,   -t(3),  t(1),
+  -t(4),   t(3),     0,   t(2),
+  0,     0,     0,     0;
+  return t_wedge;
+}
+
+// Axis-angle to matrix
+// input:
+//   theta: scalar
+//   n: 3 x 1
+// output:
+// m: 3x3
+Eigen::Matrix3d aa2mat(const double theta, const Eigen::Vector3d n) {
+  Eigen::Vector3d n_unit= n.normalized();
+  Eigen::Matrix3d N = wedge(n_unit);
+  // m = eye(3) + sin(theta)*N + (1-cos(theta))*N*N;
+  Eigen::Matrix3d m = Eigen::Matrix3d::Identity() + std::sin(theta)*N +
+      (1-std::cos(theta))*N*N;
+  return m;
+}
+
+Matrix3d quat2SO3(const Quaterniond &q) {
+  return q.normalized().toRotationMatrix();
+}
+
+Matrix3d quat2SO3(double qw, double qx, double qy, double qz) {
+  Quaterniond q(qw, qx, qy, qz);
+  return q.normalized().toRotationMatrix();
+}
+
+Matrix3d so32SO3(const Vector3d &v) {
+  double theta = v.norm();
+  if (theta > kEpsilon) {
+    Vector3d vn = v/theta;
+    Matrix3d v_wedge = wedge(v);
+    Matrix3d SO3;
+    SO3 = Matrix3d::Identity() + v_wedge*sin(theta) +
+      v_wedge*v_wedge*(1.0 - cos(theta));
+    return SO3;
+  } else {
+    return Matrix3d::Identity();
+  }
+}
+
+Vector3d SO32so3(const Matrix3d &R) {
+  Vector3d so3;
+  double temp_arg_to_cos = (R.trace() - 1.0)/2.0;
+  truncate(&temp_arg_to_cos, -1.0, 1.0);
+  double theta = acos(temp_arg_to_cos);
+  if(fabs(theta) < kEpsilon) {
+    so3(0) = 1.0;
+    so3(1) = 0.0;
+    so3(2) = 0.0;
+  } else {
+    so3(0) = R(2,1)-R(1,2);
+    so3(1) = R(0,2)-R(2,0);
+    so3(2) = R(1,0)-R(0,1);
+    so3 /= 2.0*sin(theta);
+  }
+  so3 *= theta;
+  return so3;
+}
+
+void so32quat(const Vector3d &so3, double *q) {
+  double theta = so3.norm();
+  if (theta < kEpsilon) {
+    q[0] = 1;
+    q[1] = 0;
+    q[2] = 0;
+    q[3] = 0;
+  } else {
+            // q = [cos(theta/2); sin(theta/2)*so3/theta];
+    double sin_theta = sin(theta/2.0)/theta;
+    q[0] = cos(theta/2.0);
+    q[1] = so3(0)*sin_theta;
+    q[2] = so3(1)*sin_theta;
+    q[3] = so3(2)*sin_theta;
+  }
+}
+void SO32quat(const Matrix3d &SO3, double *q) {
+  Quaterniond q_eigen(SO3);
+  q_eigen.normalize();
+  q[0] = q_eigen.w();
+  q[1] = q_eigen.x();
+  q[2] = q_eigen.y();
+  q[3] = q_eigen.z();
+}
+
+Matrix4d pose2SE3(const double *pose) {
+  Matrix4d SE3 = Matrix4d::Identity();
+  SE3(0, 3) = pose[0];
+  SE3(1, 3) = pose[1];
+  SE3(2, 3) = pose[2];
+  SE3.block<3,3>(0,0) = quat2SO3(pose[3], pose[4], pose[5], pose[6]);
+  return SE3;
+}
+
+Matrix4d posemm2SE3(const double *pose) {
+  Matrix4d SE3 = Matrix4d::Identity();
+  SE3(0, 3) = pose[0]/1000.0;
+  SE3(1, 3) = pose[1]/1000.0;
+  SE3(2, 3) = pose[2]/1000.0;
+  SE3.block<3,3>(0,0) = quat2SO3(pose[3], pose[4], pose[5], pose[6]);
+  return SE3;
+}
+
+Matrix4d se32SE3(const Vector6d &twist) {
+  Matrix4d SE3 = Matrix4d::Identity();
+  double theta = twist.tail(3).norm();
+  if ( theta < kEpsilon ) {
+    // no rotation
+    SE3(0, 3) = twist(0);
+    SE3(1, 3) = twist(1);
+    SE3(2, 3) = twist(2);
+  } else {
+    Vector3d v = twist.head(3);
+    Vector3d w = twist.tail(3);
+    Matrix3d R = so32SO3(w);
+    v /= theta;
+    w /= theta;
+    SE3.block<3,3>(0, 0) = R;
+    SE3.block<3,1>(0, 3) = (Matrix3d::Identity() - R)*(w.cross(v)) +
+        w*w.transpose()*v*theta;
+  }
+  return SE3;
+}
+
+Matrix4d spt2SE3(const Vector6d &spt) {
+  Matrix4d SE3 = Matrix4d::Identity();
+  SE3.block<3, 3>(0, 0) = so32SO3(spt.tail(3));
+  SE3.block<3, 1>(0, 3) = spt.head(3);
+  return SE3;
+}
+
+Matrix4d SE3Inv(const Matrix4d &SE3) {
+  Matrix4d SE3_inv = Matrix4d::Identity();
+  SE3_inv.block<3,1>(0, 3) =
+      -SE3.block<3,3>(0,0).transpose()*SE3.block<3,1>(0,3);
+  SE3_inv.block<3,3>(0,0) = SE3.block<3,3>(0,0).transpose();
+  return SE3_inv;
+}
+
+Vector6d SE32se3(const Matrix4d &SE3) {
+  Vector3d p     = SE3.block<3,1>(0, 3);
+  Vector3d omega = SO32so3(SE3.block<3,3>(0,0));
+  double theta = omega.norm();
+  if (theta < kEpsilon) {
+    Vector6d se3;
+    se3 << p(0), p(1), p(2), 0, 0, 0;
+    return se3;
+  } else {
+    omega /= theta;
+    Matrix3d M =
+        (Matrix3d::Identity() - wedge(omega*theta).exp())*
+        wedge(omega)+omega*omega.transpose()*theta;
+    Vector6d se3;
+    se3.head(3) = M.fullPivLu().solve(p);
+    se3.tail(3) = omega;
+    se3 *= theta;
+    return se3;
+  }
+}
+
+Vector6d SE32spt(const Matrix4d &SE3) {
+  Vector6d spt;
+  spt.head(3) = SE3.block<3, 1>(0, 3);
+  spt.tail(3) = SO32so3(SE3.block<3, 3>(0, 0));
+  return spt;
+}
+
+Matrix6d SE32Adj(const Matrix4d &SE3) {
+  Matrix6d Adj = Matrix6d::Zero();
+  Adj.topLeftCorner(3, 3)     = SE3.topLeftCorner(3, 3);
+  Adj.bottomRightCorner(3, 3) = SE3.topLeftCorner(3, 3);
+  Adj.topRightCorner(3, 3)    =
+      wedge(SE3.block<3,1>(0, 3)) * SE3.topLeftCorner(3, 3);
+  return Adj;
+}
+
+void SE32Pose(const Matrix4d &SE3, double *pose) {
+  pose[0] = SE3(0, 3);
+  pose[1] = SE3(1, 3);
+  pose[2] = SE3(2, 3);
+  SO32quat(SE3.block<3,3>(0,0), pose + 3);
+}
+
+void SE32Posemm(const Matrix4d &SE3, double *pose) {
+  pose[0] = SE3(0, 3)*1000.0;
+  pose[1] = SE3(1, 3)*1000.0;
+  pose[2] = SE3(2, 3)*1000.0;
+  SO32quat(SE3.block<3,3>(0,0), pose + 3);
+}
+
+Eigen::Quaternionf QuatMTimes(const Eigen::Quaternionf &q1,
+    const Eigen::Quaternionf &q2)  {
+  float s1 = q1.w();
+  Eigen::Vector3f v1(q1.x(), q1.y(), q1.z());
+
+  float s2 = q2.w();
+  Eigen::Vector3f v2(q2.x(), q2.y(), q2.z());
+
+  float cr_v1 = v1(1)*v2(2) - v1(2)*v2(1);
+  float cr_v2 = v1(2)*v2(0) - v1(0)*v2(2);
+  float cr_v3 = v1(0)*v2(1) - v1(1)*v2(0);
+
+  Eigen::Quaternionf qp;
+  qp.w() = s1*s2 - v2.dot(v1);
+  qp.x() = v2(0)*s1 + s2*v1(0) + cr_v1;
+  qp.y() = v2(1)*s1 + s2*v1(1) + cr_v2;
+  qp.z() = v2(2)*s1 + s2*v1(2) + cr_v3;
+
+  return qp;
+}
+
+float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2) {
+  q1.normalize();
+  q2.normalize();
+
+  Eigen::Quaternionf q_ = QuatMTimes(q1.inverse(), q2);
+
+  float ang = 2.0f*acos(q_.w()); // acos: [0, pi]
+
+  if (ang > PIf){
+    ang = ang - 2.0f*PIf;
+  }
+  return fabs(ang);
+}
+
+Eigen::Matrix3f quat2m(const Eigen::Quaternionf &q) {
+  float q11 = q.x()*q.x();
+  float q22 = q.y()*q.y();
+  float q33 = q.z()*q.z();
+  float q01 = q.w()*q.x();
+  float q02 = q.w()*q.y();
+  float q03 = q.w()*q.z();
+  float q12 = q.x()*q.y();
+  float q13 = q.x()*q.z();
+  float q23 = q.y()*q.z();
+
+  Eigen::Matrix3f m;
+  m << 1.0f - 2.0f*q22 - 2.0f*q33, 2.0f*(q12 - q03),      2.0f*(q13 + q02),
+      2.0f*(q12 + q03),     1.0f - 2.0f*q11 - 2.0f*q33,  2.0f*(q23 - q01),
+      2.0f*(q13 - q02),     2.0f*(q23 + q01),      1.0f - 2.0f*q11 - 2.0f*q22;
+  return m;
+}
+
+// Return the 6x6 jacobian matrix mapping from spt time derivative
+//  to body velocity.
+// Jac * spt time derivative = body velocity
+Matrix6d JacobianSpt2BodyV(const Matrix3d &R) {
+  Matrix6d Jac;
+  Jac = Matrix6d::Identity();
+  Jac(3, 3) = R(0,2)*R(0,2) + R(1,2)*R(1,2) + R(2,2)*R(2,2);
+  Jac(3, 5) = -R(0,0)*R(0,2) - R(1,0)*R(1,2) - R(2,0)*R(2,2);
+  Jac(4, 3) = -R(0,0)*R(0,1) - R(1,0)*R(1,1) - R(2,0)*R(2,1);
+  Jac(4, 4) = R(0,0)*R(0,0) + R(1,0)*R(1,0) + R(2,0)*R(2,0);
+  Jac(5, 4) = -R(0,1)*R(0,2) - R(1,1)*R(1,2) - R(2,1)*R(2,2);
+  Jac(5, 5) = R(0,1)*R(0,1) + R(1,1)*R(1,1) + R(2,1)*R(2,1);
+
+  return Jac;
+}
+
+void double2float(const double *array_in, float *array_out, int n) {
+  for (int i = 0; i < n; ++i)
+    array_out[i] = array_in[i];
+}
+void float2double(const float *array_in, double *array_out, int n) {
+  for (int i = 0; i < n; ++i)
+    array_out[i] = array_in[i];
+}
+
+
+/////////////////////////////////////////////////////////////////////////
+//                      Motion Planning
+/////////////////////////////////////////////////////////////////////////
+// remember to allocate 2rd arrays!
+// remember to delete pose_traj!
+void MotionPlanningLinear(const double *pose0, const double *pose_set, const int Nsteps,
+    double **pose_traj) {
+  Eigen::Quaternionf q0(pose0[3], pose0[4], pose0[5],pose0[6]);
+  Eigen::Quaternionf qset(pose_set[3], pose_set[4], pose_set[5],pose_set[6]);
+  Eigen::Quaternionf q;
+
+  for (int i = 0; i < Nsteps; ++i) {
+    pose_traj[i] = new double[7];
+    q = q0.slerp(double(i+1)/double(Nsteps), qset);
+    pose_traj[i][0] = (pose0[0]*double(Nsteps-i-1) + pose_set[0]*double(i+1))/double(Nsteps);
+    pose_traj[i][1] = (pose0[1]*double(Nsteps-i-1) + pose_set[1]*double(i+1))/double(Nsteps);
+    pose_traj[i][2] = (pose0[2]*double(Nsteps-i-1) + pose_set[2]*double(i+1))/double(Nsteps);
+    pose_traj[i][3] = q.w();
+    pose_traj[i][4] = q.x();
+    pose_traj[i][5] = q.y();
+    pose_traj[i][6] = q.z();
+  }
+}
+
+///
+/// One Dimensional trapezodial interpolation from 0 to x_f, limited by
+///   maximum acceleration a_max, maximum velocity v_max.
+///
+/// Return the acceleration time t1, constant velocity t2, and the
+/// trajectory evenly sampled on Nsteps data points.
+///
+/// If Nsteps = 0 (default), only compute t1 t2, do not compute x_traj.
+///
+void TrapezodialTrajectory(double x_f, double a_max, double v_max, double *t1,
+    double *t2, int Nsteps, double * x_traj) {
+  assert(x_f > 0);
+  assert(a_max > 0);
+  assert(v_max > 0);
+  double delta_x1 = v_max*v_max/2.0/a_max;
+  if (2.0*delta_x1 > x_f) {
+    double v_max_actual = std::sqrt(x_f*a_max);
+    *t1 = v_max_actual/a_max;
+    *t2 = 0;
+  } else {
+    *t1 = v_max/a_max;
+    double delta_x2 = x_f - 2*delta_x1;
+    *t2 = delta_x2/v_max;
+  }
+  if (Nsteps == 0) return;
+
+  double t_all = 2*(*t1) + (*t2);
+  for (int i = 0; i < Nsteps; ++i) {
+    double ratio = double(i)/double(Nsteps-1); // [0, 1]
+    double t = ratio*t_all;
+    if (t < *t1) {
+      x_traj[i] = 0.5*a_max*t*t;
+    } else if (t < *t1 + *t2) {
+      x_traj[i] = 0.5*(*t1)*v_max + v_max*(t-(*t1));
+    } else {
+      x_traj[i] = x_f - 0.5*a_max*(t_all - t)*(t_all - t);
+    }
+  } // end for
+}
+
+void MotionPlanningTrapezodial(const double *pose0, const double *pose_set,
+    double a_max_trans, double v_max_trans, double a_max_rot, double v_max_rot,
+    double rate, MatrixXd *pose_traj) {
+  Eigen::Vector4d p0, pf;
+  p0 << pose0[0], pose0[1], pose0[2], pose0[3];
+  pf << pose_set[0], pose_set[1], pose_set[2], pose_set[3];
+
+  Eigen::Quaternionf q0(pose0[3], pose0[4], pose0[5], pose0[6]);
+  Eigen::Quaternionf qf(pose_set[3], pose_set[4], pose_set[5],pose_set[6]);
+  double dist_trans = (p0 - pf).norm();
+  double dist_rot = angBTquat(q0, qf);
+
+  double t1_trans = 0;
+  double t2_trans = 0;
+  double t1_rot = 0;
+  double t2_rot = 0;
+  TrapezodialTrajectory(dist_trans, a_max_trans, v_max_trans,
+      &t1_trans, &t2_trans);
+  TrapezodialTrajectory(dist_rot, a_max_rot, v_max_rot,
+      &t1_rot, &t2_rot);
+  int Nsteps = (int)std::round(std::max(2.0*t1_trans + t2_trans,
+      2.0*t1_rot + t2_rot)*rate);
+
+  // get ratio
+  double *r_trans = new double[Nsteps];
+  double *r_rot = new double[Nsteps];
+  TrapezodialTrajectory(dist_trans, a_max_trans, v_max_trans,
+      &t1_trans, &t2_trans, Nsteps, r_trans);
+  TrapezodialTrajectory(dist_rot, a_max_rot, v_max_rot,
+      &t1_rot, &t2_rot, Nsteps, r_rot);
+  for (int i = 0; i < Nsteps; ++i) {
+    r_trans[i] /= dist_trans;
+    r_rot[i] /= dist_rot;
+  }
+
+  Eigen::Quaternionf q;
+  pose_traj->resize(7, Nsteps);
+  for (int i = 0; i < Nsteps; ++i) {
+    q = q0.slerp(r_rot[i], qf);
+    (*pose_traj)(0, i) = pose0[0]*(1.0 - r_trans[i]) + pose_set[0]*r_trans[i];
+    (*pose_traj)(1, i) = pose0[1]*(1.0 - r_trans[i]) + pose_set[1]*r_trans[i];
+    (*pose_traj)(2, i) = pose0[2]*(1.0 - r_trans[i]) + pose_set[2]*r_trans[i];
+    (*pose_traj)(3, i) = q.w();
+    (*pose_traj)(4, i) = q.x();
+    (*pose_traj)(5, i) = q.y();
+    (*pose_traj)(6, i) = q.z();
+  }
+
+  delete [] r_trans;
+  delete [] r_rot;
+}
+
+double Gaussian(double x, double var) {
+  double k = 1.0/var/std::sqrt(2.0*PI);
+  double exp = std::exp(-x*x/2.0/var/var);
+  return k*exp;
+}
+
+}

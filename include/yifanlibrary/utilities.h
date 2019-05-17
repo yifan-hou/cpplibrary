@@ -1,174 +1,181 @@
 #pragma once
-#ifndef _YIFAN_ULTILITIES_H_
-#define _YIFAN_ULTILITIES_H_
-
+#ifndef _MATH_ULTILITIES_H_
+#define _MATH_ULTILITIES_H_
 
 #ifdef __cplusplus
-	#include <cmath>
-	#include <iostream>
+    #include <cmath>
+    #include <iostream>
 #else
-	#include <math.h>
-	#include <stdio.h>
+    #include <math.h>
+    #include <stdio.h>
 #endif
- 
-// #include <stdarg.h>
 
-namespace YF
+// Eigen
+#include <Eigen/Geometry>
+#include <Eigen/Dense>
+// #include <Eigen/Core>
+// #include <Eigen/SVD>
+// #include <unsupported/Eigen/MatrixFunctions>
+
+namespace UT
 {
-	/////////////////////////////////////////////////////////////////////////
-	//                   types and static variables 
-	/////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////
+  //                   types and static variables
+  /////////////////////////////////////////////////////////////////////////
 
-	// typedef int (*printf_ptr) (const char *str, ...);
-	// static printf_ptr _printf = printf;
+  typedef Eigen::Vector3d Vector3d;
+  typedef Eigen::Matrix3d Matrix3d;
+  typedef Eigen::Matrix4d Matrix4d;
+  typedef Eigen::MatrixXd MatrixXd;
+  typedef Eigen::VectorXd VectorXd;
+  typedef Eigen::Matrix<double, 6, 1> Vector6d;
+  typedef Eigen::Matrix<double, 6, 6> Matrix6d;
+  typedef Eigen::Quaterniond Quaterniond;
 
+  typedef Eigen::Vector3f Vector3f;
+  typedef Eigen::Matrix3f Matrix3f;
+  typedef Eigen::Matrix4f Matrix4f;
+  typedef Eigen::MatrixXf MatrixXf;
+  typedef Eigen::VectorXf VectorXf;
+  typedef Eigen::Matrix<float, 6, 1> Vector6f;
+  typedef Eigen::Matrix<float, 6, 6> Matrix6f;
+  typedef Eigen::Quaternionf Quaternionf;
 
 	/////////////////////////////////////////////////////////////////////////
 	//                          iostream
 	/////////////////////////////////////////////////////////////////////////
-	void stream_array_in(ostream &st, double *array, int length)
-	{
-		for (int i = 0; i<length; i++)
-		{
-			st << array[i];
-			st << "\t";
-		}
-	}
-
-	void stream_array_in(ostream &st, float *array, int length)
-	{
-		for (int i = 0; i<length; i++)
-		{
-			st << array[i];
-			st << "\t";
-		}
-	}
-
-
-	void stream_array_in(ostream &st, int *array, int length)
-	{
-		for (int i = 0; i<length; i++)
-		{
-			st << array[i];
-			st << "\t";
-		}
-	}
+  void stream_array_in(std::ostream &st, double *array, int length);
+  void stream_array_in(std::ostream &st, float *array, int length);
+  void stream_array_in(std::ostream &st, int *array, int length);
 
 	/////////////////////////////////////////////////////////////////////////
 	//                          scalar
 	/////////////////////////////////////////////////////////////////////////
-
-	static void truncate(double *ele, const double _max, const double _min)
-	{
-		if ( (*ele) > _max)
-			(*ele) = _max;
-		else if ( (*ele) < _min)
-			(*ele) = _min;
-	}
+  void truncate(double *ele, const double _min, const double _max);
 
 	/////////////////////////////////////////////////////////////////////////
 	//                          vector&array
 	/////////////////////////////////////////////////////////////////////////
 
-	static void buf_insert(const double ele, const int size, double * buf)
-	{
-		for (int i = 1; i < size; ++i)
-		{
-			buf[size - i] = buf[size - 1 - i];
-		}
-		buf[0] = ele;
-	}
+  void buf_insert(const double ele, const int size, double * buf);
+  void copyArray(const float *src, float *dest, int dim);
+  void copyArray(const double *src, double *dest, int dim);
+  void setArray(float *array, float value, int dim);
+  void truncate(float *array, float min, float max, int dim);
+  double vec_max(const double * vec, const int size);
+  double vec_min(const double * vec, const int size);
+  double vec_mean(const double * vec, const int size);
+  double vec_slope(const double * x, const double * y,const int size);
+  // numerical differentiation with low pass filter
+  // input x, calculate dx/dt
+  // s/(as+1),
+  double diff_LPF(const double xdold, const double xnew, const double xold, const double T,const double a);
+  void truncate6f(Vector6f *v, float min, float max);
+  void truncate6d(Vector6d *v, double min, double max);
+  void truncate6d(Vector6d *v, const Vector6d &min, const Vector6d &max);
+  void stream_array_in6f(std::ostream &st, const Vector6f &array);
+  void stream_array_in6d(std::ostream &st, const Vector6d &array);
 
-	static void copyArray(const float *src, float *dest, int dim)
-	{
-	    for(int i = 0; i<dim; i++)
-	    {
-	        dest[i] = src[i];
-	    }
-	}
+  /////////////////////////////////////////////////////////////////////////
+  //                          Matrices
+  /////////////////////////////////////////////////////////////////////////
+  MatrixXd pseudoInverse(const MatrixXd &a,
+    double epsilon = std::numeric_limits<double>::epsilon());
 
-	static void setArray(float *array, float value, int dim)
-	{
-	    for(int i=0; i<dim; i++)
-	    {
-	        array[i] = value;
-	    }
-	}
+  /////////////////////////////////////////////////////////////////////////
+  //                          Robotics
+  /////////////////////////////////////////////////////////////////////////
+  /*  Frames/spaces:
+          W: world frame
+          T: current tool frame
+          So: set tool frame with offset
+          Tf: transformed generalized space
+      Quantities:
+          SE3: 4x4 homogeneous coordinates
+          se3: 6x1 twist coordinate of SE3
+          spt: 6x1 special twist: 3x1 position, 3x1 exponential coordinate for rotation
+          td: 6x1 time derivative of twist.
+          v: 6x1 velocity, either spatial or body
 
-	static void truncate(float *array, float max, float min, int dim)
-	{
-	    for(int i=0; i<dim; i++)
-	    {
-	    	array[i] = (array[i] > max)? max:array[i];
-	    	array[i] = (array[i] < min)? min:array[i];
-	    }
-	}
+          wrench: 6x1 wrench. Makes work with body velocity
+  */
 
-	static double vec_max(const double * vec, const int size)
-	{
-		double m = vec[0];
-		double t1;
-		for (int i = 0; i < size; ++i)
-		{
-			t1 = vec[i];
-			if (t1 > m) m = t1;
-		}
-		return m;
-	}
+  Matrix3d wedge(const Vector3d &v);
+  Matrix4d wedge6(const Vector6d &t);
 
-	static double vec_min(const double * vec, const int size)
-	{
-		double m = vec[0];
-		double t1;
-		for (int i = 0; i < size; ++i)
-		{
-			t1 = vec[i];
-			if (t1 < m) m = t1;
-		}
-		return m;
-	}
+  // Axis-angle to matrix
+  // input:
+  //   theta: scalar
+  //   n: 3 x 1
+  // output:
+  // m: 3x3
+  Eigen::Matrix3d aa2mat(const double theta, const Eigen::Vector3d n);
+  Matrix3d quat2SO3(const Quaterniond &q);
+  Matrix3d quat2SO3(double qw, double qx, double qy, double qz);
+  Matrix3d so32SO3(const Vector3d &v);
+  Vector3d SO32so3(const Matrix3d &R);
+  void so32quat(const Vector3d &so3, double *q);
+  void SO32quat(const Matrix3d &SO3, double *q);
+  Matrix4d pose2SE3(const double *pose);
+  Matrix4d posemm2SE3(const double *pose);
+  Matrix4d se32SE3(const Vector6d &twist);
+  Matrix4d spt2SE3(const Vector6d &spt);
+  Matrix4d SE3Inv(const Matrix4d &SE3);
+  Vector6d SE32se3(const Matrix4d &SE3);
+  Vector6d SE32spt(const Matrix4d &SE3);
+  Matrix6d SE32Adj(const Matrix4d &SE3);
+  void SE32Pose(const Matrix4d &SE3, double *pose);
+  void SE32Posemm(const Matrix4d &SE3, double *pose);
+  Eigen::Quaternionf QuatMTimes(const Eigen::Quaternionf &q1,
+    const Eigen::Quaternionf &q2);
+  float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2);
+  Eigen::Matrix3f quat2m(const Eigen::Quaternionf &q);
+  // Return the 6x6 jacobian matrix mapping from spt time derivative
+  //  to body velocity.
+  // Jac * spt time derivative = body velocity
+  Matrix6d JacobianSpt2BodyV(const Matrix3d &R);
+  void double2float(const double *array_in, float *array_out, int n);
+  void float2double(const float *array_in, double *array_out, int n);
 
-	static double vec_mean(const double * vec, const int size)
-	{
-		double sum = 0;
-		for (int i = 0; i < size; ++i)
-		{
-			sum += vec[i];
-		}
-		return sum/double(size);
-	}
+  /////////////////////////////////////////////////////////////////////////
+  //                      Motion Planning
+  /////////////////////////////////////////////////////////////////////////
+  // remember to allocate 2rd arrays!
+  // remember to delete pose_traj!
+  void MotionPlanningLinear(const double *pose0, const double *pose_set,
+      const int Nsteps, double **pose_traj);
 
+  ///
+  /// One Dimensional trapezodial interpolation from 0 to x_f, limited by
+  ///   maximum acceleration a_max, maximum velocity v_max.
+  ///
+  /// Return the acceleration time t1, constant velocity t2, and the
+  /// trajectory evenly sampled on Nsteps data points.
+  ///
+  void TrapezodialTrajectory(double x_f, double a_max, double v_max, double *t1,
+    double *t2, int Nsteps = 0, double * x_traj = 0 );
+  /**
+   * Pose to pose trapezodial interpolation. Poses are represented as double
+   * arrays of length 7 (x, y, z, qw, qx, qy, qz). Unit of translation is mm.
+   * Number of frames is determined by the speed/acceleration limit and the
+   * control rate @p rate.
+   * @param[in]  pose0        The current pose
+   * @param[in]  pose_set     The goal pose
+   * @param[in]  a_max_trans  Maximum translational acceleration (mm/s^2)
+   * @param[in]  v_max_trans  Maximum translational velocity (mm/s)
+   * @param[in]  a_max_rot    Maximum rotational acceleration (rad/s^2)
+   * @param[in]  v_max_rot    Maximum rotational velocity (rad/s)
+   * @param[in]  rate         Control rate (Hz).
+   * @param      pose_traj    Output trajectory, a 7 x Nsteps Eigen Matrix.
+   */
+  void MotionPlanningTrapezodial(const double *pose0, const double *pose_set,
+    double a_max_trans, double v_max_trans, double a_max_rot, double v_max_rot,
+    double rate, MatrixXd *pose_traj);
 
-	static double vec_slope(const double * x, const double * y,const int size)
-    {
-    	double avgX = vec_mean(x,size);
-    	double avgY = vec_mean(y,size);
-
-    	double numerator = 0.0;
-    	double denominator = 0.0;
-
-    	double xd = 0;
-    	for(int i=0; i<size; ++i)
-    	{
-    		xd = x[i] - avgX;
-    		numerator += (xd) * (y[i] - avgY);
-    		denominator += xd * xd;
-    	}
-    	
-    	return numerator / denominator;
-    }
-
-    // numerical differentiation with low pass filter
-    // input x, calculate dx/dt
-    // s/(as+1),
-	static double diff_LPF(const double xdold, const double xnew, const double xold, const double T,const double a)
-    {
-		double As = exp(-T/a);
-		return As*xdold + (1 - As)*((xnew - xold)/T);
-    }
-
-
-
+  /////////////////////////////////////////////////////////////////////////
+  //                      Probability
+  /////////////////////////////////////////////////////////////////////////
+  double Gaussian(double x, double var);
 }
-	
-#endif // _YIFAN_ULTILITIES_H_
+
+#endif // _MATH_ULTILITIES_H_

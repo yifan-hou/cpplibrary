@@ -6,23 +6,25 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}")
 
+include_directories(/usr/include/eigen3)
 
 
 ###########
 ## Build ##
 ###########
 add_library(SINGLETON SHARED
-	src/SINGLETON.cpp 
-# 	"src/PracticalSocket.cpp" 
-# 	"src/egm.pb.cc" 
-# 	"src/TimerLinux.cpp"
+	src/SINGLETON.cpp
 )
 
 add_library(TimerLinux SHARED
 	src/TimerLinux.cpp
 )
 
-# target_link_libraries(SINGLETON	
+add_library(Utilities SHARED
+	src/utilities.cpp
+)
+
+# target_link_libraries(SINGLETON
 #     ${Boost_FILESYSTEM_LIBRARY}
 #     ${Boost_SYSTEM_LIBRARY}
 #     ${PROTOBUF_LIBRARY}
@@ -38,6 +40,6 @@ install(DIRECTORY include/
     )
 
 # binaries
-install(TARGETS SINGLETON TimerLinux
+install(TARGETS SINGLETON TimerLinux Utilities
     DESTINATION /usr/local/lib/yifanlibrary
     )

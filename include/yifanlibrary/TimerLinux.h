@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <chrono>
 
+namespace UT {
+
 class Timer
 {
 public:
@@ -17,6 +19,7 @@ private:
 	std::chrono::high_resolution_clock::time_point _t1;
 	std::chrono::high_resolution_clock::time_point _t2;
 };
-	
+
+}
 
 #endif // _YIFAN_TIMER_LINUX_H_

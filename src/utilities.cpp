@@ -471,6 +471,27 @@ Eigen::Quaternionf QuatMTimes(const Eigen::Quaternionf &q1,
   return qp;
 }
 
+Eigen::Quaterniond QuatMTimes(const Eigen::Quaterniond &q1,
+    const Eigen::Quaterniond &q2)  {
+  double s1 = q1.w();
+  Eigen::Vector3d v1(q1.x(), q1.y(), q1.z());
+
+  double s2 = q2.w();
+  Eigen::Vector3d v2(q2.x(), q2.y(), q2.z());
+
+  double cr_v1 = v1(1)*v2(2) - v1(2)*v2(1);
+  double cr_v2 = v1(2)*v2(0) - v1(0)*v2(2);
+  double cr_v3 = v1(0)*v2(1) - v1(1)*v2(0);
+
+  Eigen::Quaterniond qp;
+  qp.w() = s1*s2 - v2.dot(v1);
+  qp.x() = v2(0)*s1 + s2*v1(0) + cr_v1;
+  qp.y() = v2(1)*s1 + s2*v1(1) + cr_v2;
+  qp.z() = v2(2)*s1 + s2*v1(2) + cr_v3;
+
+  return qp;
+}
+
 float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2) {
   q1.normalize();
   q2.normalize();
@@ -480,10 +501,25 @@ float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2) {
   float ang = 2.0f*acos(q_.w()); // acos: [0, pi]
 
   if (ang > PIf){
-    ang = ang - 2.0f*PIf;
+    ang = 2.0f*PIf - ang;
   }
-  return fabs(ang);
+  return abs(ang);
 }
+
+double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2) {
+  q1.normalize();
+  q2.normalize();
+
+  Eigen::Quaterniond q_ = QuatMTimes(q1.inverse(), q2);
+
+  double ang = 2.0*acos(q_.w()); // acos: [0, pi]
+
+  if (ang > PI){
+    ang = 2.0*PI - ang;
+  }
+  return abs(ang);
+}
+
 
 Eigen::Matrix3f quat2m(const Eigen::Quaternionf &q) {
   float q11 = q.x()*q.x();
@@ -564,7 +600,7 @@ void MotionPlanningLinear(const double *pose0, const double *pose_set, const int
 ///
 void TrapezodialTrajectory(double x_f, double a_max, double v_max, double *t1,
     double *t2, int Nsteps, double * x_traj) {
-  assert(x_f > 0);
+  assert(x_f > -1e-7);
   assert(a_max > 0);
   assert(v_max > 0);
   double delta_x1 = v_max*v_max/2.0/a_max;
@@ -596,12 +632,12 @@ void TrapezodialTrajectory(double x_f, double a_max, double v_max, double *t1,
 void MotionPlanningTrapezodial(const double *pose0, const double *pose_set,
     double a_max_trans, double v_max_trans, double a_max_rot, double v_max_rot,
     double rate, MatrixXd *pose_traj) {
-  Eigen::Vector4d p0, pf;
-  p0 << pose0[0], pose0[1], pose0[2], pose0[3];
-  pf << pose_set[0], pose_set[1], pose_set[2], pose_set[3];
+  Eigen::Vector3d p0, pf;
+  p0 << pose0[0], pose0[1], pose0[2];
+  pf << pose_set[0], pose_set[1], pose_set[2];
 
-  Eigen::Quaternionf q0(pose0[3], pose0[4], pose0[5], pose0[6]);
-  Eigen::Quaternionf qf(pose_set[3], pose_set[4], pose_set[5],pose_set[6]);
+  Eigen::Quaterniond q0(pose0[3], pose0[4], pose0[5], pose0[6]);
+  Eigen::Quaterniond qf(pose_set[3], pose_set[4], pose_set[5],pose_set[6]);
   double dist_trans = (p0 - pf).norm();
   double dist_rot = angBTquat(q0, qf);
 
@@ -628,7 +664,7 @@ void MotionPlanningTrapezodial(const double *pose0, const double *pose_set,
     r_rot[i] /= dist_rot;
   }
 
-  Eigen::Quaternionf q;
+  Eigen::Quaterniond q;
   pose_traj->resize(7, Nsteps);
   for (int i = 0; i < Nsteps; ++i) {
     q = q0.slerp(r_rot[i], qf);

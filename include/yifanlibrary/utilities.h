@@ -145,13 +145,23 @@ namespace UT
   void MotionPlanningLinear(const double *pose0, const double *pose_set,
       const int Nsteps, double **pose_traj);
 
-  ///
-  /// One Dimensional trapezodial interpolation from 0 to x_f, limited by
-  ///   maximum acceleration a_max, maximum velocity v_max.
-  ///
-  /// Return the acceleration time t1, constant velocity t2, and the
-  /// trajectory evenly sampled on Nsteps data points.
-  ///
+  /**
+   * 1D trapezodial interpolation from x0 = 0 to x_f, limited by
+   * maximum acceleration @p a_max, maximum velocity @p v_max. The return
+   * trajectory is sampled in @p Nsteps time steps. The total duration of the
+   * trajectory is 2*t1 + t2.
+   *
+   * If @p Nsteps=0 (default), the function only computes time @p t1, @p t2,
+   * do not generate the trajectory.
+   *
+   * @param[in]  x_f     The final position
+   * @param[in]  a_max   Maximum acceleration
+   * @param[in]  v_max   Maximum velocity
+   * @param      t1      Time duration of the acceleration phase
+   * @param      t2      Time duration of the constant speed phase
+   * @param[in]  Nsteps  The number of sampling points
+   * @param      x_traj  The interpolated trajectory, 1 x Nsteps array
+   */
   void TrapezodialTrajectory(double x_f, double a_max, double v_max, double *t1,
     double *t2, int Nsteps = 0, double * x_traj = 0 );
   /**

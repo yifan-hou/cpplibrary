@@ -589,15 +589,23 @@ void MotionPlanningLinear(const double *pose0, const double *pose_set, const int
   }
 }
 
-///
-/// One Dimensional trapezodial interpolation from 0 to x_f, limited by
-///   maximum acceleration a_max, maximum velocity v_max.
-///
-/// Return the acceleration time t1, constant velocity t2, and the
-/// trajectory evenly sampled on Nsteps data points.
-///
-/// If Nsteps = 0 (default), only compute t1 t2, do not compute x_traj.
-///
+/**
+ * 1D trapezodial interpolation from x0 = 0 to x_f, limited by
+ * maximum acceleration @p a_max, maximum velocity @p v_max. The return
+ * trajectory is sampled in @p Nsteps time steps. The total duration of the
+ * trajectory is 2*t1 + t2.
+ *
+ * If @p Nsteps=0 (default), the function only computes time @p t1, @p t2,
+ * do not generate the trajectory.
+ *
+ * @param[in]  x_f     The final position
+ * @param[in]  a_max   Maximum acceleration
+ * @param[in]  v_max   Maximum velocity
+ * @param      t1      Time duration of the acceleration phase
+ * @param      t2      Time duration of the constant speed phase
+ * @param[in]  Nsteps  The number of sampling points
+ * @param      x_traj  The interpolated trajectory, 1 x Nsteps array
+ */
 void TrapezodialTrajectory(double x_f, double a_max, double v_max, double *t1,
     double *t2, int Nsteps, double * x_traj) {
   assert(x_f > -1e-7);
@@ -652,33 +660,82 @@ void MotionPlanningTrapezodial(const double *pose0, const double *pose_set,
   int Nsteps = (int)std::round(std::max(2.0*t1_trans + t2_trans,
       2.0*t1_rot + t2_rot)*rate);
 
-  // get ratio
-  double *r_trans = new double[Nsteps];
-  double *r_rot = new double[Nsteps];
-  TrapezodialTrajectory(dist_trans, a_max_trans, v_max_trans,
-      &t1_trans, &t2_trans, Nsteps, r_trans);
-  TrapezodialTrajectory(dist_rot, a_max_rot, v_max_rot,
-      &t1_rot, &t2_rot, Nsteps, r_rot);
-  for (int i = 0; i < Nsteps; ++i) {
-    r_trans[i] /= dist_trans;
-    r_rot[i] /= dist_rot;
-  }
+  using namespace std;
+  cout << "dist_trans: " << dist_trans << ", dist_rot: " << dist_rot << endl;
+  cout << "Nsteps: " << Nsteps << endl;
+  if (Nsteps > 2) {
+    // need to do interpolation
+    // get ratio
+    double *r_trans = new double[Nsteps];
+    double *r_rot = new double[Nsteps];
+    TrapezodialTrajectory(dist_trans, a_max_trans, v_max_trans,
+        &t1_trans, &t2_trans, Nsteps, r_trans);
+    TrapezodialTrajectory(dist_rot, a_max_rot, v_max_rot,
+        &t1_rot, &t2_rot, Nsteps, r_rot);
 
-  Eigen::Quaterniond q;
-  pose_traj->resize(7, Nsteps);
-  for (int i = 0; i < Nsteps; ++i) {
-    q = q0.slerp(r_rot[i], qf);
-    (*pose_traj)(0, i) = pose0[0]*(1.0 - r_trans[i]) + pose_set[0]*r_trans[i];
-    (*pose_traj)(1, i) = pose0[1]*(1.0 - r_trans[i]) + pose_set[1]*r_trans[i];
-    (*pose_traj)(2, i) = pose0[2]*(1.0 - r_trans[i]) + pose_set[2]*r_trans[i];
-    (*pose_traj)(3, i) = q.w();
-    (*pose_traj)(4, i) = q.x();
-    (*pose_traj)(5, i) = q.y();
-    (*pose_traj)(6, i) = q.z();
-  }
+    // regularize r_trans and r_rot to [0, 1]
+    // note here Nsteps > 2
+    if (dist_trans > 1e-5)
+      for (int i = 0; i < Nsteps; ++i)
+        r_trans[i] /= dist_trans;
+    else
+      for (int i = 0; i < Nsteps; ++i)
+        r_trans[i] = i/double(Nsteps-1);
 
-  delete [] r_trans;
-  delete [] r_rot;
+    if (dist_rot > 1e-5)
+      for (int i = 0; i < Nsteps; ++i)
+        r_rot[i] /= dist_rot;
+    else
+      for (int i = 0; i < Nsteps; ++i)
+        r_rot[i] = i/double(Nsteps-1);
+
+    // compute the actual pose from r
+    Eigen::Quaterniond q;
+    pose_traj->resize(7, Nsteps);
+    for (int i = 0; i < Nsteps; ++i) {
+      q = q0.slerp(r_rot[i], qf);
+      (*pose_traj)(0, i) = pose0[0]*(1.0 - r_trans[i]) + pose_set[0]*r_trans[i];
+      (*pose_traj)(1, i) = pose0[1]*(1.0 - r_trans[i]) + pose_set[1]*r_trans[i];
+      (*pose_traj)(2, i) = pose0[2]*(1.0 - r_trans[i]) + pose_set[2]*r_trans[i];
+      (*pose_traj)(3, i) = q.w();
+      (*pose_traj)(4, i) = q.x();
+      (*pose_traj)(5, i) = q.y();
+      (*pose_traj)(6, i) = q.z();
+    }
+    delete [] r_trans;
+    delete [] r_rot;
+  } else if (Nsteps == 2) {
+    // no need for interpolation
+    pose_traj->resize(7, 2);
+    (*pose_traj)(0, 0) = pose0[0];
+    (*pose_traj)(1, 0) = pose0[1];
+    (*pose_traj)(2, 0) = pose0[2];
+    (*pose_traj)(3, 0) = pose0[3];
+    (*pose_traj)(4, 0) = pose0[4];
+    (*pose_traj)(5, 0) = pose0[5];
+    (*pose_traj)(6, 0) = pose0[6];
+    (*pose_traj)(0, 1) = pose_set[0];
+    (*pose_traj)(1, 1) = pose_set[1];
+    (*pose_traj)(2, 1) = pose_set[2];
+    (*pose_traj)(3, 1) = pose_set[3];
+    (*pose_traj)(4, 1) = pose_set[4];
+    (*pose_traj)(5, 1) = pose_set[5];
+    (*pose_traj)(6, 1) = pose_set[6];
+  } else {
+    // no need for interpolation
+    pose_traj->resize(7, 1);
+    (*pose_traj)(0, 0) = pose_set[0];
+    (*pose_traj)(1, 0) = pose_set[1];
+    (*pose_traj)(2, 0) = pose_set[2];
+    (*pose_traj)(3, 0) = pose_set[3];
+    (*pose_traj)(4, 0) = pose_set[4];
+    (*pose_traj)(5, 0) = pose_set[5];
+    (*pose_traj)(6, 0) = pose_set[6];
+  }
+  cout << "pose_traj: \n" << *pose_traj << endl;
+  cout << "press ENTER to continue..\n";
+  getchar();
+
 }
 
 double Gaussian(double x, double var) {

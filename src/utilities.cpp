@@ -660,9 +660,6 @@ void MotionPlanningTrapezodial(const double *pose0, const double *pose_set,
   int Nsteps = (int)std::round(std::max(2.0*t1_trans + t2_trans,
       2.0*t1_rot + t2_rot)*rate);
 
-  using namespace std;
-  cout << "dist_trans: " << dist_trans << ", dist_rot: " << dist_rot << endl;
-  cout << "Nsteps: " << Nsteps << endl;
   if (Nsteps > 2) {
     // need to do interpolation
     // get ratio
@@ -732,10 +729,6 @@ void MotionPlanningTrapezodial(const double *pose0, const double *pose_set,
     (*pose_traj)(5, 0) = pose_set[5];
     (*pose_traj)(6, 0) = pose_set[6];
   }
-  cout << "pose_traj: \n" << *pose_traj << endl;
-  cout << "press ENTER to continue..\n";
-  getchar();
-
 }
 
 double Gaussian(double x, double var) {

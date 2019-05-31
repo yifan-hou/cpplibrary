@@ -140,10 +140,17 @@ namespace UT
   /////////////////////////////////////////////////////////////////////////
   //                      Motion Planning
   /////////////////////////////////////////////////////////////////////////
-  // remember to allocate 2rd arrays!
-  // remember to delete pose_traj!
+
+  /**
+   * Linear interpolation between @p pose0 and @p pose_set.
+   *
+   * @param[in]  pose0      The initial pose. [x y z qw qx qy qz]
+   * @param[in]  pose_set   The goal pose
+   * @param[in]  Nsteps     The number of time steps
+   * @param      pose_traj  The interpolated pose traj. 7 x Nsteps matrix
+   */
   void MotionPlanningLinear(const double *pose0, const double *pose_set,
-      const int Nsteps, double **pose_traj);
+      const int Nsteps, MatrixXd *pose_traj);
 
   /**
    * 1D trapezodial interpolation from x0 = 0 to x_f, limited by

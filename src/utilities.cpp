@@ -568,24 +568,22 @@ void float2double(const float *array_in, double *array_out, int n) {
 /////////////////////////////////////////////////////////////////////////
 //                      Motion Planning
 /////////////////////////////////////////////////////////////////////////
-// remember to allocate 2rd arrays!
-// remember to delete pose_traj!
 void MotionPlanningLinear(const double *pose0, const double *pose_set, const int Nsteps,
-    double **pose_traj) {
+    MatrixXd *pose_traj) {
   Eigen::Quaternionf q0(pose0[3], pose0[4], pose0[5],pose0[6]);
   Eigen::Quaternionf qset(pose_set[3], pose_set[4], pose_set[5],pose_set[6]);
   Eigen::Quaternionf q;
 
+  pose_traj->resize(7, Nsteps);
   for (int i = 0; i < Nsteps; ++i) {
-    pose_traj[i] = new double[7];
     q = q0.slerp(double(i+1)/double(Nsteps), qset);
-    pose_traj[i][0] = (pose0[0]*double(Nsteps-i-1) + pose_set[0]*double(i+1))/double(Nsteps);
-    pose_traj[i][1] = (pose0[1]*double(Nsteps-i-1) + pose_set[1]*double(i+1))/double(Nsteps);
-    pose_traj[i][2] = (pose0[2]*double(Nsteps-i-1) + pose_set[2]*double(i+1))/double(Nsteps);
-    pose_traj[i][3] = q.w();
-    pose_traj[i][4] = q.x();
-    pose_traj[i][5] = q.y();
-    pose_traj[i][6] = q.z();
+    (*pose_traj)(0, i) = (pose0[0]*double(Nsteps-i-1) + pose_set[0]*double(i+1))/double(Nsteps);
+    (*pose_traj)(1, i) = (pose0[1]*double(Nsteps-i-1) + pose_set[1]*double(i+1))/double(Nsteps);
+    (*pose_traj)(2, i) = (pose0[2]*double(Nsteps-i-1) + pose_set[2]*double(i+1))/double(Nsteps);
+    (*pose_traj)(3, i) = q.w();
+    (*pose_traj)(4, i) = q.x();
+    (*pose_traj)(5, i) = q.y();
+    (*pose_traj)(6, i) = q.z();
   }
 }
 

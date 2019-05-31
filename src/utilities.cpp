@@ -503,7 +503,7 @@ float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2) {
   if (ang > PIf){
     ang = 2.0f*PIf - ang;
   }
-  return abs(ang);
+  return fabs(ang);
 }
 
 double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2) {
@@ -517,7 +517,7 @@ double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2) {
   if (ang > PI){
     ang = 2.0*PI - ang;
   }
-  return abs(ang);
+  return fabs(ang);
 }
 
 

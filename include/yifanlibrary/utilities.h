@@ -75,6 +75,8 @@ namespace UT
   void truncate6d(Vector6d *v, const Vector6d &min, const Vector6d &max);
   void stream_array_in6f(std::ostream &st, const Vector6f &array);
   void stream_array_in6d(std::ostream &st, const Vector6d &array);
+  void double2float(const double *array_in, float *array_out, int n);
+  void float2double(const float *array_in, double *array_out, int n);
 
   /////////////////////////////////////////////////////////////////////////
   //                          Matrices
@@ -103,12 +105,10 @@ namespace UT
   Matrix3d wedge(const Vector3d &v);
   Matrix4d wedge6(const Vector6d &t);
 
-  // Axis-angle to matrix
-  // input:
-  //   theta: scalar
-  //   n: 3 x 1
-  // output:
-  // m: 3x3
+  //
+  // Transformations
+  //
+
   Eigen::Matrix3d aa2mat(const double theta, const Eigen::Vector3d n);
   Matrix3d quat2SO3(const Quaterniond &q);
   Matrix3d quat2SO3(double qw, double qx, double qy, double qz);
@@ -126,17 +126,51 @@ namespace UT
   Matrix6d SE32Adj(const Matrix4d &SE3);
   void SE32Pose(const Matrix4d &SE3, double *pose);
   void SE32Posemm(const Matrix4d &SE3, double *pose);
+  Eigen::Matrix3f quat2m(const Eigen::Quaternionf &q);
+  Eigen::Matrix3d rotX(double angle_rad);
+  Eigen::Matrix3d rotY(double angle_rad);
+  Eigen::Matrix3d rotZ(double angle_rad);
+
+  //
+  // Quaternions
+  //
   Eigen::Quaternionf QuatMTimes(const Eigen::Quaternionf &q1,
     const Eigen::Quaternionf &q2);
+  Eigen::Quaterniond QuatMTimes(const Eigen::Quaterniond &q1,
+      const Eigen::Quaterniond &q2);
   float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2);
-  Eigen::Matrix3f quat2m(const Eigen::Quaternionf &q);
+  double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2);
+
+  //
+  // Vector operations
+  //
+  /**
+   * find the (signed) angle from vector x to vector b.
+   *
+   * @param[in]  x            initial vector.
+   * @param[in]  b            final vector.
+   * @param[in]  z            if specified, it is the rotation axis. It is used
+   *                          to specify positive direction of rotation.
+   * @param[in]  nonnegative  when z is present, nonnegative will decide the
+   *                          range of return angle between [-pi, pi] or [0, 2pi]
+   *
+   * @return     The angle. If @p z is not given, range is [0, pi]. If @p z is
+   *             given, range is [-pi, pi] (@p nonnegative = false) or
+   *             [0, 2pi] (@p nonnegative = true).
+   */
+  double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
+      Eigen::Vector3d z = Eigen::Vector3d::Zero(), bool nonnegative = false);
+  Eigen::MatrixXd transformByRAndP(const Eigen::MatrixXd &points_rowwise,
+     const Eigen::Matrix3d &R, const Eigen::Vector3d &p);
+
+  //
+  // Others
+  //
+
   // Return the 6x6 jacobian matrix mapping from spt time derivative
   //  to body velocity.
   // Jac * spt time derivative = body velocity
   Matrix6d JacobianSpt2BodyV(const Matrix3d &R);
-  void double2float(const double *array_in, float *array_out, int n);
-  void float2double(const float *array_in, double *array_out, int n);
-
   /////////////////////////////////////////////////////////////////////////
   //                      Motion Planning
   /////////////////////////////////////////////////////////////////////////

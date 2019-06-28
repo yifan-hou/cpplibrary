@@ -570,20 +570,6 @@ double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2) {
   return fabs(ang);
 }
 
-/**
- * find the (signed) angle from vector x to vector b.
- *
- * @param[in]  x            initial vector.
- * @param[in]  b            final vector.
- * @param[in]  z            if specified, it is the rotation axis. It is used
- *                          to specify positive direction of rotation.
- * @param[in]  nonnegative  when z is present, nonnegative will decide the
- *                          range of return angle between [-pi, pi] or [0, 2pi]
- *
- * @return     The angle. If @p z is not given, range is [0, pi]. If @p z is
- *             given, range is [-pi, pi] (@p nonnegative = false) or
- *             [0, 2pi] (@p nonnegative = true).
- */
 double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
     Eigen::Vector3d z = Eigen::Vector3d::Zero(), bool nonnegative = false) {
   x.normalize();

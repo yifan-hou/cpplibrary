@@ -13,11 +13,8 @@
 // Eigen
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-// #include <Eigen/Core>
-// #include <Eigen/SVD>
-// #include <unsupported/Eigen/MatrixFunctions>
 
-namespace UT
+namespace RUT
 {
   /////////////////////////////////////////////////////////////////////////
   //                   types and static variables

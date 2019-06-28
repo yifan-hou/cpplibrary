@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <chrono>
 
-namespace UT {
+namespace RUT {
 
 class Timer
 {

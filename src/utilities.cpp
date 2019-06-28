@@ -227,24 +227,24 @@ MatrixXd pseudoInverse(const MatrixXd &a,
   }
 }
 
-    /////////////////////////////////////////////////////////////////////////
-    //                          Robotics
-    /////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//                          Robotics
+/////////////////////////////////////////////////////////////////////////
 
-    /*  Frames/spaces:
-            W: world frame
-            T: current tool frame
-            So: set tool frame with offset
-            Tf: transformed generalized space
-        Quantities:
-            SE3: 4x4 homogeneous coordinates
-            se3: 6x1 twist coordinate of SE3
-            spt: 6x1 special twist: 3x1 position, 3x1 exponential coordinate for rotation
-            td: 6x1 time derivative of twist.
-            v: 6x1 velocity, either spatial or body
+/*  Frames/spaces:
+        W: world frame
+        T: current tool frame
+        So: set tool frame with offset
+        Tf: transformed generalized space
+    Quantities:
+        SE3: 4x4 homogeneous coordinates
+        se3: 6x1 twist coordinate of SE3
+        spt: 6x1 special twist: 3x1 position, 3x1 exponential coordinate for rotation
+        td: 6x1 time derivative of twist.
+        v: 6x1 velocity, either spatial or body
 
-            wrench: 6x1 wrench. Makes work with body velocity
-    */
+        wrench: 6x1 wrench. Makes work with body velocity
+*/
 
 Matrix3d wedge(const Vector3d &v) {
   Matrix3d v_wedge;
@@ -450,6 +450,56 @@ void SE32Posemm(const Matrix4d &SE3, double *pose) {
   SO32quat(SE3.block<3,3>(0,0), pose + 3);
 }
 
+Eigen::Matrix3f quat2m(const Eigen::Quaternionf &q) {
+  float q11 = q.x()*q.x();
+  float q22 = q.y()*q.y();
+  float q33 = q.z()*q.z();
+  float q01 = q.w()*q.x();
+  float q02 = q.w()*q.y();
+  float q03 = q.w()*q.z();
+  float q12 = q.x()*q.y();
+  float q13 = q.x()*q.z();
+  float q23 = q.y()*q.z();
+
+  Eigen::Matrix3f m;
+  m << 1.0f - 2.0f*q22 - 2.0f*q33, 2.0f*(q12 - q03),      2.0f*(q13 + q02),
+      2.0f*(q12 + q03),     1.0f - 2.0f*q11 - 2.0f*q33,  2.0f*(q23 - q01),
+      2.0f*(q13 - q02),     2.0f*(q23 + q01),      1.0f - 2.0f*q11 - 2.0f*q22;
+  return m;
+}
+
+// Return the 6x6 jacobian matrix mapping from spt time derivative
+//  to body velocity.
+// Jac * spt time derivative = body velocity
+Matrix6d JacobianSpt2BodyV(const Matrix3d &R) {
+  Matrix6d Jac;
+  Jac = Matrix6d::Identity();
+  Jac(3, 3) = R(0,2)*R(0,2) + R(1,2)*R(1,2) + R(2,2)*R(2,2);
+  Jac(3, 5) = -R(0,0)*R(0,2) - R(1,0)*R(1,2) - R(2,0)*R(2,2);
+  Jac(4, 3) = -R(0,0)*R(0,1) - R(1,0)*R(1,1) - R(2,0)*R(2,1);
+  Jac(4, 4) = R(0,0)*R(0,0) + R(1,0)*R(1,0) + R(2,0)*R(2,0);
+  Jac(5, 4) = -R(0,1)*R(0,2) - R(1,1)*R(1,2) - R(2,1)*R(2,2);
+  Jac(5, 5) = R(0,1)*R(0,1) + R(1,1)*R(1,1) + R(2,1)*R(2,1);
+
+  return Jac;
+}
+
+Eigen::Matrix3d rotX(double angle_rad) {
+  Eigen::Vector3d x;
+  x << 1, 0, 0;
+  return aa2mat(angle_rad, x);
+}
+Eigen::Matrix3d rotY(double angle_rad) {
+  Eigen::Vector3d y;
+  y << 0, 1, 0;
+  return aa2mat(angle_rad, y);
+}
+Eigen::Matrix3d rotZ(double angle_rad) {
+  Eigen::Vector3d z;
+  z << 0, 0, 1;
+  return aa2mat(angle_rad, z);
+}
+
 Eigen::Quaternionf QuatMTimes(const Eigen::Quaternionf &q1,
     const Eigen::Quaternionf &q2)  {
   float s1 = q1.w();
@@ -520,39 +570,37 @@ double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2) {
   return fabs(ang);
 }
 
-
-Eigen::Matrix3f quat2m(const Eigen::Quaternionf &q) {
-  float q11 = q.x()*q.x();
-  float q22 = q.y()*q.y();
-  float q33 = q.z()*q.z();
-  float q01 = q.w()*q.x();
-  float q02 = q.w()*q.y();
-  float q03 = q.w()*q.z();
-  float q12 = q.x()*q.y();
-  float q13 = q.x()*q.z();
-  float q23 = q.y()*q.z();
-
-  Eigen::Matrix3f m;
-  m << 1.0f - 2.0f*q22 - 2.0f*q33, 2.0f*(q12 - q03),      2.0f*(q13 + q02),
-      2.0f*(q12 + q03),     1.0f - 2.0f*q11 - 2.0f*q33,  2.0f*(q23 - q01),
-      2.0f*(q13 - q02),     2.0f*(q23 + q01),      1.0f - 2.0f*q11 - 2.0f*q22;
-  return m;
+/**
+ * find the (signed) angle from vector x to vector b.
+ *
+ * @param[in]  x            initial vector.
+ * @param[in]  b            final vector.
+ * @param[in]  z            if specified, it is the rotation axis. It is used
+ *                          to specify positive direction of rotation.
+ * @param[in]  nonnegative  when z is present, nonnegative will decide the
+ *                          range of return angle between [-pi, pi] or [0, 2pi]
+ *
+ * @return     The angle. If @p z is not given, range is [0, pi]. If @p z is
+ *             given, range is [-pi, pi] (@p nonnegative = false) or
+ *             [0, 2pi] (@p nonnegative = true).
+ */
+double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
+    Eigen::Vector3d z = Eigen::Vector3d::Zero(), bool nonnegative = false) {
+  x.normalize();
+  b.normalize();
+  if (z.norm() < 1e-5) {
+    return acos(x.dot(b));
+  } else {
+    z.normalize();
+    double ang = atan2(x.cross(b).dot(z), x.dot(b));
+    if (nonnegative) ang = (ang < 0)? 2*PI + ang : ang;
+    return ang;
+  }
 }
 
-// Return the 6x6 jacobian matrix mapping from spt time derivative
-//  to body velocity.
-// Jac * spt time derivative = body velocity
-Matrix6d JacobianSpt2BodyV(const Matrix3d &R) {
-  Matrix6d Jac;
-  Jac = Matrix6d::Identity();
-  Jac(3, 3) = R(0,2)*R(0,2) + R(1,2)*R(1,2) + R(2,2)*R(2,2);
-  Jac(3, 5) = -R(0,0)*R(0,2) - R(1,0)*R(1,2) - R(2,0)*R(2,2);
-  Jac(4, 3) = -R(0,0)*R(0,1) - R(1,0)*R(1,1) - R(2,0)*R(2,1);
-  Jac(4, 4) = R(0,0)*R(0,0) + R(1,0)*R(1,0) + R(2,0)*R(2,0);
-  Jac(5, 4) = -R(0,1)*R(0,2) - R(1,1)*R(1,2) - R(2,1)*R(2,2);
-  Jac(5, 5) = R(0,1)*R(0,1) + R(1,1)*R(1,1) + R(2,1)*R(2,1);
-
-  return Jac;
+Eigen::MatrixXd transformByRAndP(const Eigen::MatrixXd &points_rowwise, const Eigen::Matrix3d &R, const Eigen::Vector3d &p) {
+  Eigen::MatrixXd points_transformed = R*points_rowwise.transpose() + p.replicate(1, points_rowwise.rows());
+  return points_transformed.transpose();
 }
 
 void double2float(const double *array_in, float *array_out, int n) {

@@ -1,5 +1,5 @@
 # cpplibrary
-My personal collection of libraries for c++.
+Collection of utilities for c++.
 
 # Install
 ```

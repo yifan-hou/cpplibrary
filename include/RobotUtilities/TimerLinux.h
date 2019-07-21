@@ -1,5 +1,5 @@
-#ifndef _YIFAN_TIMER_LINUX_H_
-#define _YIFAN_TIMER_LINUX_H_
+#ifndef _TIMER_LINUX_H_
+#define _TIMER_LINUX_H_
 
 #include <cstdlib>
 #include <chrono>
@@ -22,4 +22,4 @@ private:
 
 }
 
-#endif // _YIFAN_TIMER_LINUX_H_
+#endif // _TIMER_LINUX_H_

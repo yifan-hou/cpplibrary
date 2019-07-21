@@ -1,4 +1,3 @@
-// Yifan:
 //  To use it, add following code:
 //      StackWalker sw; 
 //      sw.ShowCallstack();

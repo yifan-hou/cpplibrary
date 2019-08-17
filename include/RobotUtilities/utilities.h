@@ -37,6 +37,7 @@ namespace RUT
   typedef Eigen::Matrix<float, 6, 1> Vector6f;
   typedef Eigen::Matrix<float, 6, 6> Matrix6f;
   typedef Eigen::Quaternionf Quaternionf;
+  typedef Eigen::Quaterniond Quaterniond;
 
 	/////////////////////////////////////////////////////////////////////////
 	//                          iostream
@@ -63,6 +64,16 @@ namespace RUT
   double vec_min(const double * vec, const int size);
   double vec_mean(const double * vec, const int size);
   double vec_slope(const double * x, const double * y,const int size);
+  /**
+   * Find in the vector the element with maximum abs value.
+   *
+   * @param[in]  vec   The vector.
+   * @param[in]  size  Size of the vector.
+   * @param      id    Id of the maximum element
+   *
+   * @return     The maximum element
+   */
+  double vec_max_abs(const double * vec, const int size, int *id);
   // numerical differentiation with low pass filter
   // input x, calculate dx/dt
   // s/(as+1),

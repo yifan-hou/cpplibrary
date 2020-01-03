@@ -597,6 +597,128 @@ double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
   }
 }
 
+// SE(3)
+CartesianPose::CartesianPose(std::vector<double> pose) {
+  p_[0] = pose[0];
+  p_[1] = pose[1];
+  p_[2] = pose[2];
+  q_.w() = pose[3];
+  q_.x() = pose[4];
+  q_.y() = pose[5];
+  q_.z() = pose[6];
+  R_ = q_.toRotationMatrix();
+}
+
+CartesianPose::CartesianPose(Eigen::Matrix4d T) {
+  p_ = T.block<3,1>(0,3);
+  R_ = T.block<3,3>(0,0);
+  q_ = Eigen::Quaterniond(R_);
+}
+
+CartesianPose::CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p) {
+  p_ = p;
+  q_ = q;
+  R_ = q_.toRotationMatrix();
+}
+
+void CartesianPose::setQuaternion(const Eigen::Quaterniond &q) {
+  q_ = q;
+  R_ = q_.toRotationMatrix();
+}
+
+void CartesianPose::setQuaternion(const std::vector<double> &q) {
+  q_.w() = q[0];
+  q_.x() = q[1];
+  q_.y() = q[2];
+  q_.z() = q[3];
+  R_ = q_.toRotationMatrix();
+}
+
+void CartesianPose::setXYZ(const Eigen::Vector3d &p) {
+  p_ = p;
+}
+
+void CartesianPose::setXYZ(const std::vector<double> &p) {
+  p_[0] = p[0];
+  p_[1] = p[1];
+  p_[2] = p[2];
+}
+
+Eigen::Matrix3d CartesianPose::getRotationMatrix() const {
+  return R_;
+}
+
+Eigen::Quaterniond CartesianPose::getQuaternion() const {
+  return q_;
+}
+
+Eigen::Vector3d CartesianPose::getXYZ() const {
+  return p_;
+}
+
+Eigen::Vector3d CartesianPose::getXAxis() const {
+  return R_.block<3,1>(0, 0);
+}
+
+Eigen::Vector3d CartesianPose::getYAxis() const {
+  return R_.block<3,1>(0, 1);
+}
+
+Eigen::Vector3d CartesianPose::getZAxis() const {
+  return R_.block<3,1>(0, 2);
+}
+
+
+Eigen::Matrix4d CartesianPose::getTransformMatrix() const{
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T.block<3, 3>(0, 0) = R_;
+  T.block<3, 1>(0, 3) = p_;
+  return T;
+}
+
+Eigen::Isometry3d CartesianPose::getIsometry3d() const {
+  Eigen::Isometry3d transform = Eigen::Translation<double, 3>(
+      p_[0], p_[1], p_[2]) * q_;
+  return transform;
+}
+
+CartesianPose CartesianPose::operator*(const CartesianPose &pose) const {
+  Eigen::Matrix4d T = getTransformMatrix()*pose.getTransformMatrix();
+  return CartesianPose(T);
+}
+
+CartesianPose CartesianPose::inv() const {
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T.block<3, 3>(0, 0) = R_.transpose();
+  T.block<3, 1>(0, 3) = -R_.transpose() * p_;
+  return CartesianPose(T);
+}
+
+Eigen::Vector3d CartesianPose::transformVec(const Eigen::Vector3d &v) const {
+  return R_ * v;
+}
+
+Eigen::Vector3d CartesianPose::transformPoint(const Eigen::Vector3d &p) const {
+  return R_*p + p_;
+}
+
+Eigen::Quaterniond CartesianPose::transformQuat(const Eigen::Quaterniond &q) const {
+  Eigen::Matrix3d R = q.toRotationMatrix();
+  return Eigen::Quaterniond(R_*R);
+}
+
+
+void CartesianPose::print() const{
+  std::cout << "p:\n";
+  std::cout << p_ << std::endl;
+  std::cout << "R:\n";
+  std::cout << R_ << std::endl;
+  std::cout << "q:\n";
+  std::cout << q_.w() << " " << q_.x() << " "
+      << q_.y() << " " << q_.z() << std::endl;
+}
+
+
 Eigen::MatrixXd transformByRAndP(const Eigen::MatrixXd &points_rowwise, const Eigen::Matrix3d &R, const Eigen::Vector3d &p) {
   Eigen::MatrixXd points_transformed = R*points_rowwise.transpose() + p.replicate(1, points_rowwise.rows());
   return points_transformed.transpose();

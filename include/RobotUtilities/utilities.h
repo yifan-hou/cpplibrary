@@ -10,6 +10,9 @@
     #include <stdio.h>
 #endif
 
+#include <memory> // smart pointers
+#include <vector>
+
 // Eigen
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
@@ -148,6 +151,62 @@ namespace RUT
       const Eigen::Quaterniond &q2);
   float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2);
   double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2);
+
+  //
+  // SE(3)
+  //
+  class CartesianPose
+  {
+  public:
+    CartesianPose(){};
+    /**
+     * Construct the pose from a 1x7 vector.
+     *
+     * @param[in]  pose  Pose vector. [x y z qw qx qy qz]
+     */
+    CartesianPose(std::vector<double> pose);
+    /**
+     * Constructs the pose from a 4x4 homogeneous matrix.
+     *
+     * @param[in]  T     The 4x4 homogeneous matrix.
+     */
+    CartesianPose(Eigen::Matrix4d T);
+    CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p);
+    ~CartesianPose(){}
+
+    // types
+    using Ptr = std::shared_ptr<CartesianPose>;
+    using ConstPtr = std::shared_ptr<const CartesianPose>;
+
+    // setters/getters
+    void setQuaternion(const Eigen::Quaterniond &q);
+    void setQuaternion(const std::vector<double> &q);
+    void setXYZ(const Eigen::Vector3d &p);
+    void setXYZ(const std::vector<double> &p);
+    Eigen::Matrix3d getRotationMatrix() const;
+    Eigen::Quaterniond getQuaternion() const;
+    Eigen::Vector3d getXYZ() const;
+    Eigen::Vector3d getXAxis() const;
+    Eigen::Vector3d getYAxis() const;
+    Eigen::Vector3d getZAxis() const;
+    Eigen::Matrix4d getTransformMatrix() const;
+    Eigen::Isometry3d getIsometry3d() const;
+
+    // operators
+    CartesianPose operator*(const CartesianPose &pose) const;
+    CartesianPose inv() const;
+
+    // Transformations
+    Eigen::Vector3d transformVec(const Eigen::Vector3d &v) const;
+    Eigen::Vector3d transformPoint(const Eigen::Vector3d &p) const;
+    Eigen::Quaterniond transformQuat(const Eigen::Quaterniond &q) const;
+    // MISC
+    void print() const;
+  private:
+    Eigen::Quaterniond q_;
+    Eigen::Vector3d p_;
+    Eigen::Matrix3d R_;
+  };
 
   //
   // Vector operations

@@ -149,8 +149,8 @@ namespace RUT
     const Eigen::Quaternionf &q2);
   Eigen::Quaterniond QuatMTimes(const Eigen::Quaterniond &q1,
       const Eigen::Quaterniond &q2);
-  float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2);
-  double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2);
+  float angBTquat(const Eigen::Quaternionf &q1, const Eigen::Quaternionf &q2);
+  double angBTquat(const Eigen::Quaterniond &q1, const Eigen::Quaterniond &q2);
 
   //
   // SE(3)

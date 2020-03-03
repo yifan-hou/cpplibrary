@@ -555,11 +555,8 @@ Eigen::Quaterniond QuatMTimes(const Eigen::Quaterniond &q1,
   return qp;
 }
 
-float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2) {
-  q1.normalize();
-  q2.normalize();
-
-  Eigen::Quaternionf q_ = QuatMTimes(q1.inverse(), q2);
+float angBTquat(const Eigen::Quaternionf &q1, const Eigen::Quaternionf &q2) {
+  Eigen::Quaternionf q_ = QuatMTimes(q1.normalized().inverse(), q2.normalized());
 
   float ang = 2.0f*acos(q_.w()); // acos: [0, pi]
 
@@ -569,11 +566,8 @@ float angBTquat(Eigen::Quaternionf &q1, Eigen::Quaternionf &q2) {
   return fabs(ang);
 }
 
-double angBTquat(Eigen::Quaterniond &q1, Eigen::Quaterniond &q2) {
-  q1.normalize();
-  q2.normalize();
-
-  Eigen::Quaterniond q_ = QuatMTimes(q1.inverse(), q2);
+double angBTquat(const Eigen::Quaterniond &q1, const Eigen::Quaterniond &q2) {
+  Eigen::Quaterniond q_ = QuatMTimes(q1.normalized().inverse(), q2.normalized());
 
   double ang = 2.0*acos(q_.w()); // acos: [0, pi]
 
@@ -619,6 +613,12 @@ CartesianPose::CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d 
   p_ = p;
   q_ = q;
   R_ = q_.toRotationMatrix();
+}
+
+CartesianPose::CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p) {
+  p_ = p;
+  R_ = R;
+  q_ = Eigen::Quaterniond(R_);
 }
 
 void CartesianPose::setQuaternion(const Eigen::Quaterniond &q) {
@@ -707,6 +707,12 @@ Eigen::Quaterniond CartesianPose::transformQuat(const Eigen::Quaterniond &q) con
   return Eigen::Quaterniond(R_*R);
 }
 
+double CartesianPose::distBTPose(const CartesianPose & pose,
+    double ratio) const {
+  double angle = angBTquat(q_, pose.q_);
+  double dist = (p_ - pose.p_).norm();
+  return angle*ratio + dist;
+}
 
 void CartesianPose::print() const{
   std::cout << "p:\n";

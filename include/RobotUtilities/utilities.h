@@ -172,6 +172,7 @@ namespace RUT
      */
     CartesianPose(Eigen::Matrix4d T);
     CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p);
+    CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p);
     ~CartesianPose(){}
 
     // types
@@ -200,6 +201,19 @@ namespace RUT
     Eigen::Vector3d transformVec(const Eigen::Vector3d &v) const;
     Eigen::Vector3d transformPoint(const Eigen::Vector3d &p) const;
     Eigen::Quaterniond transformQuat(const Eigen::Quaterniond &q) const;
+
+    // metric
+
+    /**
+     * Distance between this pose and another pose
+     *
+     * @param[in]  pose   Another pose
+     * @param[in]  ratio  scaling of rotation to length
+     *
+     * @return     angle*ratio + length
+     */
+    double distBTPose(const CartesianPose & pose, double ratio = 1.0) const;
+
     // MISC
     void print() const;
   private:

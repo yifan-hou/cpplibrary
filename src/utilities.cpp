@@ -567,10 +567,8 @@ float angBTquat(const Eigen::Quaternionf &q1, const Eigen::Quaternionf &q2) {
 }
 
 double angBTquat(const Eigen::Quaterniond &q1, const Eigen::Quaterniond &q2) {
-  Eigen::Quaterniond q_ = QuatMTimes(q1.normalized().inverse(), q2.normalized());
-
-  double ang = 2.0*acos(q_.w()); // acos: [0, pi]
-
+  double dot = q1.normalized().dot(q2.normalized());
+  double ang = acos(2.0*dot*dot - 1.0);
   if (ang > PI){
     ang = 2.0*PI - ang;
   }

@@ -568,7 +568,11 @@ float angBTquat(const Eigen::Quaternionf &q1, const Eigen::Quaternionf &q2) {
 
 double angBTquat(const Eigen::Quaterniond &q1, const Eigen::Quaterniond &q2) {
   double dot = q1.normalized().dot(q2.normalized());
-  double ang = acos(2.0*dot*dot - 1.0);
+  double cos_value = 2.0*dot*dot - 1.0;
+  double ang;
+  if (cos_value > 0.999999) ang = 0;
+  else if (cos_value < -0.999999) ang = PI;
+  else ang = acos(cos_value);
   if (ang > PI){
     ang = 2.0*PI - ang;
   }

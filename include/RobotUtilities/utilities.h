@@ -175,6 +175,8 @@ namespace RUT
     CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p);
     ~CartesianPose(){}
 
+    static CartesianPose Identity();
+
     // types
     using Ptr = std::shared_ptr<CartesianPose>;
     using ConstPtr = std::shared_ptr<const CartesianPose>;

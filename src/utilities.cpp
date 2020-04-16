@@ -626,6 +626,10 @@ CartesianPose::CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p)
   q_ = Eigen::Quaterniond(R_);
 }
 
+CartesianPose CartesianPose::Identity() {
+  return CartesianPose(Eigen::Matrix4d::Identity());
+}
+
 void CartesianPose::setQuaternion(const Eigen::Quaterniond &q) {
   q_ = q;
   R_ = q_.toRotationMatrix();

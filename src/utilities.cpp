@@ -598,10 +598,13 @@ CartesianPose::CartesianPose(std::vector<double> pose) {
   p_[0] = pose[0];
   p_[1] = pose[1];
   p_[2] = pose[2];
-  q_.w() = pose[3];
-  q_.x() = pose[4];
-  q_.y() = pose[5];
-  q_.z() = pose[6];
+  double norm = sqrt(pose[3]*pose[3] + pose[4]*pose[4] + pose[5]*pose[5]
+      + pose[6]*pose[6]);
+  assert(abs(norm - 1.0) < 0.1);
+  q_.w() = pose[3]/norm;
+  q_.x() = pose[4]/norm;
+  q_.y() = pose[5]/norm;
+  q_.z() = pose[6]/norm;
   R_ = q_.toRotationMatrix();
 }
 

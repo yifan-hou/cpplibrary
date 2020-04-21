@@ -182,6 +182,7 @@ namespace RUT
     using ConstPtr = std::shared_ptr<const CartesianPose>;
 
     // setters/getters
+    void setRotationMatrix(const Eigen::Matrix3d &R);
     void setQuaternion(const Eigen::Quaterniond &q);
     void setQuaternion(const std::vector<double> &q);
     void setXYZ(const Eigen::Vector3d &p);

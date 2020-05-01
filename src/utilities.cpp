@@ -307,7 +307,7 @@ Matrix3d so32SO3(const Vector3d &v) {
   double theta = v.norm();
   if (theta > kEpsilon) {
     Vector3d vn = v/theta;
-    Matrix3d v_wedge = wedge(v);
+    Matrix3d v_wedge = wedge(vn);
     Matrix3d SO3;
     SO3 = Matrix3d::Identity() + v_wedge*sin(theta) +
       v_wedge*v_wedge*(1.0 - cos(theta));

@@ -696,6 +696,11 @@ Eigen::Isometry3d CartesianPose::getIsometry3d() const {
   return transform;
 }
 
+std::vector<double> CartesianPose::getVector() const {
+  std::vector<double> vec = {p_[0], p_[1], p_[2], q_.w(), q_.x(), q_.y(), q_.z()};
+  return vec;
+}
+
 CartesianPose CartesianPose::operator*(const CartesianPose &pose) const {
   Eigen::Matrix4d T = getTransformMatrix()*pose.getTransformMatrix();
   return CartesianPose(T);

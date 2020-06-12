@@ -88,6 +88,27 @@ namespace RUT
   void stream_array_in6d(std::ostream &st, const Vector6d &array);
   void double2float(const double *array_in, float *array_out, int n);
   void float2double(const float *array_in, double *array_out, int n);
+  /**
+   * Finds an element in a std vector.
+   *
+   * @param[in]  vec   The vector
+   * @param[in]  ele   The element
+   *
+   * @return     index of the found element; -1 if not found.
+   */
+  int findInVector(std::vector<int> vec, int ele);
+  int findInEigenVector(const Eigen::VectorXi &vec, int ele);
+
+  /**
+   * Finds multiple elements in a vector. Return the common elements among the
+   * two vectors.
+   *
+   * @param[in]  vec   The vector
+   * @param[in]  eles  The elements to be checked
+   *
+   * @return     The common elements (not their indices)
+   */
+  std::vector<int> findInVector(std::vector<int> vec, std::vector<int> eles);
 
   /////////////////////////////////////////////////////////////////////////
   //                          Matrices

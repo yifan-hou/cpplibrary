@@ -1,5 +1,6 @@
 #include "RobotUtilities/utilities.h"
 
+#include <algorithm>
 
 // Eigen
 #include <Eigen/Geometry>
@@ -261,7 +262,6 @@ MatrixXd pseudoInverse(const MatrixXd &a,
 
         wrench: 6x1 wrench. Makes work with body velocity
 */
-
 Matrix3d wedge(const Vector3d &v) {
   Matrix3d v_wedge;
   v_wedge << 0, -v(2), v(1),
@@ -756,6 +756,48 @@ void double2float(const double *array_in, float *array_out, int n) {
 void float2double(const float *array_in, double *array_out, int n) {
   for (int i = 0; i < n; ++i)
     array_out[i] = array_in[i];
+}
+
+int findInVector(std::vector<int> vec, int ele) {
+  std::vector<int>::iterator it = std::find(vec.begin(), vec.end(), ele);
+  if (it != vec.end()) {
+    return std::distance(vec.begin(), it);
+  } else {
+    return -1;
+  }
+}
+
+std::vector<int> findInVector(std::vector<int> vec, std::vector<int> eles) {
+  // Sort the vector
+  std::sort(vec.begin(), vec.end());
+  std::sort(eles.begin(), eles.end());
+
+  // Initialise a vector to store the common values
+  // and an iterator to traverse this vector
+  std::vector<int> result(vec.size() + eles.size());
+  std::vector<int>::iterator it;
+
+  it = set_intersection(vec.begin(),
+                        vec.end(),
+                        eles.begin(),
+                        eles.end(),
+                        result.begin());
+  int num = std::distance(result.begin(), it);
+  result.resize(num);
+  // std::cout << "result size: " << result.size() << std::endl;
+  // std::cout << "\nCommon elements:\n";
+  // for (std::vector<int>::iterator st = result.begin(); st != it; ++st)
+  //     std::cout << *st << ", ";
+  // std::cout << '\n';
+  // getchar();
+  return result;
+}
+
+int findInEigenVector(const Eigen::VectorXi &vec, int ele) {
+  std::vector<int> v_std;
+  v_std.resize(vec.size());
+  Eigen::VectorXi::Map(&v_std[0], vec.size()) = vec;
+  return findInVector(v_std, ele);
 }
 
 

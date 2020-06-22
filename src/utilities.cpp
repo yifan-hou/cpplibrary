@@ -608,10 +608,27 @@ CartesianPose::CartesianPose(std::vector<double> pose) {
   R_ = q_.toRotationMatrix();
 }
 
-CartesianPose::CartesianPose(Eigen::Matrix4d T) {
-  p_ = T.block<3,1>(0,3);
-  R_ = T.block<3,3>(0,0);
-  q_ = Eigen::Quaterniond(R_);
+
+CartesianPose::CartesianPose(const Eigen::MatrixXd &T) {
+  if ((T.rows() == 4) && (T.cols() == 4)) {
+    p_ = T.block<3,1>(0,3);
+    R_ = T.block<3,3>(0,0);
+    q_ = Eigen::Quaterniond(R_);
+  } else if ((T.rows() == 7) && (T.cols() == 1)) {
+    p_[0] = T(0);
+    p_[1] = T(1);
+    p_[2] = T(2);
+    double norm = sqrt(T(3)*T(3) + T(4)*T(4) + T(5)*T(5)
+        + T(6)*T(6));
+    assert(abs(norm - 1.0) < 0.1);
+    q_.w() = T(3)/norm;
+    q_.x() = T(4)/norm;
+    q_.y() = T(5)/norm;
+    q_.z() = T(6)/norm;
+    R_ = q_.toRotationMatrix();
+  } else {
+    std::cerr << "[utilities.CartesianPose] wrong input matrix size. " << T.rows() << " x " << T.cols() << std::endl;
+  }
 }
 
 CartesianPose::CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p) {

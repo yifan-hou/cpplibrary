@@ -31,6 +31,7 @@ namespace RUT
   typedef Eigen::Matrix<double, 6, 1> Vector6d;
   typedef Eigen::Matrix<double, 6, 6> Matrix6d;
   typedef Eigen::Quaterniond Quaterniond;
+  typedef Eigen::Matrix<double, 7, 1> Vector7d;
 
   typedef Eigen::Vector3f Vector3f;
   typedef Eigen::Matrix3f Matrix3f;
@@ -187,11 +188,13 @@ namespace RUT
      */
     CartesianPose(std::vector<double> pose);
     /**
-     * Constructs the pose from a 4x4 homogeneous matrix.
+     * Constructs the pose from an Eigen Matrix. T must be either:
+     *  a 4x4 homogeneous matrix, or
+     *  a 7x1 vector.
      *
-     * @param[in]  T     The 4x4 homogeneous matrix.
+     * @param[in]  T     The 4x4 homogeneous matrix or 7x1 vector.
      */
-    CartesianPose(Eigen::Matrix4d T);
+    CartesianPose(const Eigen::MatrixXd &T);
     CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p);
     CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p);
     ~CartesianPose(){}

@@ -111,6 +111,16 @@ namespace RUT
    */
   std::vector<int> findInVector(std::vector<int> vec, std::vector<int> eles);
 
+  // lines, plucker coordinates
+  Vector6d getPluckerLine(const Vector3d &p, const Vector3d &n);
+  double reciprocalProduct(const Vector6d &line1, const Vector6d &line2);
+  // note: this distance is signed.
+  double distBTPluckerLines(const Vector6d &line1, const Vector6d &line2);
+  // rad
+  double angleBTPluckerLines(const Vector6d &line1, const Vector6d &line2);
+  double distPoint2PluckerLine(const Vector3d &p, const Vector6d &line);
+
+
   /////////////////////////////////////////////////////////////////////////
   //                          Matrices
   /////////////////////////////////////////////////////////////////////////

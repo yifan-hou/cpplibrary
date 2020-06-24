@@ -818,6 +818,38 @@ int findInEigenVector(const Eigen::VectorXi &vec, int ele) {
 }
 
 
+Vector6d getPluckerLine(const Vector3d &p, const Vector3d &n) {
+  Vector6d line;
+  line << n.normalized(), p.cross(n.normalized());
+  return line;
+}
+double reciprocalProduct(const Vector6d &line1, const Vector6d &line2) {
+  return line1.head<3>().dot(line2.tail<3>()) + line2.head<3>().dot(line1.tail<3>());
+}
+double distBTPluckerLines(const Vector6d &line1, const Vector6d &line2) {
+  return reciprocalProduct(line1, line2)/line1.head<3>().cross(line2.head<3>()).norm();
+}
+double angleBTPluckerLines(const Vector6d &line1, const Vector6d &line2) {
+  Eigen::Vector3d n1 = line1.head<3>();
+  Eigen::Vector3d n2 = line2.head<3>();
+  double dot = std::fabs(n1.dot(n2));
+  if (dot < 1e-10) return PI/2;
+  double cross = n1.cross(n2).norm();
+  double tan_alpha = cross/dot;
+  // std::cout << "[angleBTPluckerLines] n1: " << n1.transpose() << std::endl;
+  // std::cout << "[angleBTPluckerLines] n2: " << n2.transpose() << std::endl;
+  // std::cout << "[angleBTPluckerLines] dot: " << dot << std::endl;
+  // std::cout << "[angleBTPluckerLines] cross: " << cross << std::endl;
+  // std::cout << "[angleBTPluckerLines] sin_alpha: " << sin_alpha << std::endl;
+  return std::atan(tan_alpha);
+}
+
+double distPoint2PluckerLine(const Vector3d &p, const Vector6d &line) {
+  Vector3d q = line.head<3>();
+  Vector3d q0 = line.tail<3>();
+  return (q0 - p.cross(q)).norm()/q.norm();
+}
+
 /////////////////////////////////////////////////////////////////////////
 //                      Motion Planning
 /////////////////////////////////////////////////////////////////////////

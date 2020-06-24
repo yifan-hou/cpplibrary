@@ -19,6 +19,9 @@ add_library(Utilities SHARED
 	src/utilities.cpp
 )
 
+add_executable(test_utilities src/test.cpp)
+target_link_libraries(test_utilities Utilities)
+
 #############
 ## Install ##
 #############

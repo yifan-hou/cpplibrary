@@ -513,6 +513,23 @@ Eigen::Matrix3d rotZ(double angle_rad) {
   return aa2mat(angle_rad, z);
 }
 
+Eigen::Matrix3d getRFromZ(const Eigen::Vector3d &z) {
+  Eigen::Vector3d t0, t1;
+  t0 << 1, 0, 0;
+  t1 << 0, 1, 0;
+  Eigen::Vector3d x, y;
+  if (fabs(z.dot(t0))>0.8) {
+    x = z.cross(t1);
+  } else {
+    x = z.cross(t0);
+  }
+  x.normalize();
+  y = z.cross(x);
+  Eigen::Matrix3d R;
+  R << x, y, z;
+  return R;
+}
+
 Eigen::Quaternionf QuatMTimes(const Eigen::Quaternionf &q1,
     const Eigen::Quaternionf &q2)  {
   float s1 = q1.w();
@@ -675,6 +692,12 @@ void CartesianPose::setXYZ(const std::vector<double> &p) {
   p_[2] = p[2];
 }
 
+void CartesianPose::scaleXYZ(double scale) {
+  p_[0] *= scale;
+  p_[1] *= scale;
+  p_[2] *= scale;
+}
+
 Eigen::Matrix3d CartesianPose::getRotationMatrix() const {
   return R_;
 }
@@ -758,12 +781,6 @@ void CartesianPose::print() const{
   std::cout << "q:\n";
   std::cout << q_.w() << " " << q_.x() << " "
       << q_.y() << " " << q_.z() << std::endl;
-}
-
-
-Eigen::MatrixXd transformByRAndP(const Eigen::MatrixXd &points_rowwise, const Eigen::Matrix3d &R, const Eigen::Vector3d &p) {
-  Eigen::MatrixXd points_transformed = R*points_rowwise.transpose() + p.replicate(1, points_rowwise.rows());
-  return points_transformed.transpose();
 }
 
 void double2float(const double *array_in, float *array_out, int n) {

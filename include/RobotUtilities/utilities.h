@@ -173,6 +173,15 @@ namespace RUT
   Eigen::Matrix3d rotX(double angle_rad);
   Eigen::Matrix3d rotY(double angle_rad);
   Eigen::Matrix3d rotZ(double angle_rad);
+  /**
+   * @brief      Gets the rotation matrix from z vector. The x and y axes are
+   *             choosen arbitrarily.
+   *
+   * @param[in]  z     { Unit vector measured in world frame }
+   *
+   * @return     Rotation matrix from world to the rotated frame.
+   */
+  Eigen::Matrix3d getRFromZ(const Eigen::Vector3d &z);
 
   //
   // Quaternions
@@ -221,6 +230,7 @@ namespace RUT
     void setQuaternion(const std::vector<double> &q);
     void setXYZ(const Eigen::Vector3d &p);
     void setXYZ(const std::vector<double> &p);
+    void scaleXYZ(double scale);
     Eigen::Matrix3d getRotationMatrix() const;
     Eigen::Quaterniond getQuaternion() const;
     Eigen::Vector3d getXYZ() const;
@@ -279,8 +289,6 @@ namespace RUT
    */
   double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
       Eigen::Vector3d z = Eigen::Vector3d::Zero(), bool nonnegative = false);
-  Eigen::MatrixXd transformByRAndP(const Eigen::MatrixXd &points_rowwise,
-     const Eigen::Matrix3d &R, const Eigen::Vector3d &p);
 
   //
   // Others

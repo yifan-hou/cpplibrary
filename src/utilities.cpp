@@ -1,6 +1,7 @@
 #include "RobotUtilities/utilities.h"
 
 #include <algorithm>
+#include <ctime>
 
 // Eigen
 #include <Eigen/Geometry>
@@ -59,6 +60,16 @@ void truncate(double *ele, const double _min, const double _max)
     (*ele) = _max;
   else if ( (*ele) < _min)
     (*ele) = _min;
+}
+
+double rand() {
+  int std_rand = std::rand();
+  return std_rand/RAND_MAX;
+}
+int srand() {
+  int seed = std::time(NULL);
+  std::srand(seed);
+  return seed;
 }
 
     /////////////////////////////////////////////////////////////////////////

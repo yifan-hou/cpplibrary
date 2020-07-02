@@ -114,6 +114,7 @@ namespace RUT
    */
   std::vector<int> findInVector(std::vector<int> vec, std::vector<int> eles);
 
+
   // lines, plucker coordinates
   Vector6d getPluckerLine(const Vector3d &p, const Vector3d &n);
   double reciprocalProduct(const Vector6d &line1, const Vector6d &line2);
@@ -217,6 +218,7 @@ namespace RUT
      * @param[in]  T     The 4x4 homogeneous matrix or 7x1 vector.
      */
     CartesianPose(const Eigen::MatrixXd &T);
+    CartesianPose(const Eigen::Isometry3d &iso);
     CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p);
     CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p);
     ~CartesianPose(){}

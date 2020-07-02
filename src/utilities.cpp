@@ -659,6 +659,12 @@ CartesianPose::CartesianPose(const Eigen::MatrixXd &T) {
   }
 }
 
+CartesianPose::CartesianPose(const Eigen::Isometry3d &iso) {
+  p_ = iso.translation();
+  R_ = iso.rotation();
+  q_ = Eigen::Quaterniond(R_);
+}
+
 CartesianPose::CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p) {
   p_ = p;
   q_ = q;
@@ -844,7 +850,6 @@ int findInEigenVector(const Eigen::VectorXi &vec, int ele) {
   Eigen::VectorXi::Map(&v_std[0], vec.size()) = vec;
   return findInVector(v_std, ele);
 }
-
 
 Vector6d getPluckerLine(const Vector3d &p, const Vector3d &n) {
   Vector6d line;

@@ -269,6 +269,8 @@ namespace RUT
 
     // MISC
     void print() const;
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   private:
     Eigen::Quaterniond q_;
     Eigen::Vector3d p_;

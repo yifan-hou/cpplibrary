@@ -255,6 +255,86 @@ MatrixXd pseudoInverse(const MatrixXd &a,
   }
 }
 
+// This is a rewriting of matlab's implementation
+int rref(MatrixXd *A, double TOL) {
+  // Loop over the entire matrix.
+  int m = A->rows();
+  int n = A->cols();
+  int i = 0;
+  int j = 0;
+  int rank = 0;
+  VectorXd column;
+  while (i < m && j < n) {
+    // Find value and index of largest element in the remainder of column j.
+    // [p, k] = max(abs(A(i:m,j)));
+    int k; // index
+    column = A->block(i,j,m-i,1).cwiseAbs();
+    double p = column.maxCoeff(&k);
+    k = k+i;
+    if (p <= TOL) {
+      // The column is negligible, zero it out.
+      // A(i:m,j) = 0;
+      A->block(i,j,m-i,1) = MatrixXd::Zero(m-i, 1);
+      j++;
+    } else {
+      rank ++;
+      // Swap i-th and k-th rows.
+      // A([i k],j:n) = A([k i],j:n);
+      MatrixXd temp_row = A->block(i, j, 1, n-j);
+      A->block(i, j, 1, n-j) = A->block(k, j, 1, n-j);
+      A->block(k, j, 1, n-j) = temp_row;
+
+      // Divide the pivot row by the pivot element.
+      // A(i,j:n) = A(i,j:n)./A(i,j);
+      A->block(i, j, 1, n-j) /= (*A)(i, j);
+      // Subtract multiples of the pivot row from all the other rows.
+      for (k = 0; k < m; ++k)  {
+        if (k == i) continue;
+        // A(k,j:n) = A(k,j:n) - A(k,j).*A(i,j:n);
+        A->block(k, j, 1, n-j) = A->block(k, j, 1, n-j) - (*A)(k,j)*A->block(i, j, 1, n-j);
+      }
+      i++;
+      j++;
+    }
+  }
+  return rank;
+}
+
+
+int rowSpace(MatrixXd *A, double TOL) {
+  // Loop over the entire matrix.
+  int m = std::min(A->rows(), A->cols());
+  int rows = A->rows();
+  int dim = A->cols();
+  MatrixXd I = MatrixXd::Identity(dim, dim);
+  MatrixXd proj;
+  VectorXd norms;
+  MatrixXd pivot_row, ith_row;
+  for (int i = 0; i < m; ++i) {
+    // Find the row with largest norm
+    norms = A->bottomRows(rows-i).rowwise().norm();
+    int k;
+    double p = norms.maxCoeff(&k);
+    if (p <= TOL) {
+      // time to stop
+      return i;
+    }
+    k = k + i;
+    // use the kth row to eliminate all other rows
+    pivot_row = A->middleRows(k, 1).rowwise().normalized();
+    proj = I - pivot_row.transpose() * pivot_row;
+    A->bottomRows(rows-i) = A->bottomRows(rows-i)*proj.transpose();
+    // move the kth row to ith row
+    if (k != i) {
+      ith_row = A->middleRows(i, 1);
+      A->middleRows(i, 1) = pivot_row;
+      A->middleRows(k, 1) = ith_row;
+    } else {
+      A->middleRows(i, 1) = pivot_row;
+    }
+  }
+  return m;
+}
 /////////////////////////////////////////////////////////////////////////
 //                          Robotics
 /////////////////////////////////////////////////////////////////////////

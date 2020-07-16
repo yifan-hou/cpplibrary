@@ -26,14 +26,23 @@ int main() {
   // std::cout << "point dist to line 1 = " << dist1 << std::endl;
   // std::cout << "point dist to line 2 = " << dist2 << std::endl;
 
-  std::vector<double> pose_vec = {1,2,3,0,1,0,0};
-  CartesianPose pose = CartesianPose(pose_vec);
-  Eigen::Isometry3d iso = pose.getIsometry3d();
-  CartesianPose pose2 = CartesianPose(iso);
-  std::cout << "Pose 1: " << std::endl;
-  pose.print();
-  std::cout << "Pose 2: " << std::endl;
-  pose2.print();
+  // std::vector<double> pose_vec = {1,2,3,0,1,0,0};
+  // CartesianPose pose = CartesianPose(pose_vec);
+  // Eigen::Isometry3d iso = pose.getIsometry3d();
+  // CartesianPose pose2 = CartesianPose(iso);
+  // std::cout << "Pose 1: " << std::endl;
+  // pose.print();
+  // std::cout << "Pose 2: " << std::endl;
+  // pose2.print();
 
+  Eigen::MatrixXd A(3,3);
+  A << -4.3102,   14.3674,   -3.3332,
+         0,         0,         0,
+    4.3102,   14.3674,   -0.8333;
+  std::cout << "A: \n" << A << std::endl;
+  int r = rowSpace(&A, 1e-10);
+  std::cout << "rank: " << r << std::endl;
+  std::cout << "rowSpace(A): \n" << A << std::endl;
+  std::cout << "A*(A'): \n" << A*A.transpose() << std::endl;
   return 0;
 }

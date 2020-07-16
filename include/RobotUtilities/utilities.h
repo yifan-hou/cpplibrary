@@ -131,6 +131,23 @@ namespace RUT
   MatrixXd pseudoInverse(const MatrixXd &a,
     double epsilon = std::numeric_limits<double>::epsilon());
 
+  // compute Reduced row echelon form of A. In place computation.
+  // return the rank of A. After the computation, the first rank rows of A are
+  // the row space of the input A; the rest of A are zeros.
+  // This is basically the Gaussian elimination.
+  //
+  // TOL: acceptable magnitude of a pivot
+  int rref(MatrixXd *A, double TOL = 1e-9);
+  /**
+   * Gram-Schmidt procedure. Compute an unitary basis of the rows of A.
+   *
+   * @param      A     The input matrix. Will be modified.
+   * @param[in]  TOL   Tol
+   *
+   * @return     rank of A
+   */
+  int rowSpace(MatrixXd *A, double TOL = 1e-9);
+
   /////////////////////////////////////////////////////////////////////////
   //                          Robotics
   /////////////////////////////////////////////////////////////////////////

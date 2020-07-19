@@ -54,8 +54,11 @@ namespace RUT
 	//                          scalar
 	/////////////////////////////////////////////////////////////////////////
   void truncate(double *ele, const double _min, const double _max);
-  // Generate a random number between 0/1.
+  // Generate a random number in (0, 1).
   double rand();
+  // Generate a random integer in [0, N)
+  int randi(int N);
+
   // set seed using time
   int srand();
 	/////////////////////////////////////////////////////////////////////////
@@ -220,13 +223,15 @@ namespace RUT
   class CartesianPose
   {
   public:
-    CartesianPose(){};
+    CartesianPose();
+    ~CartesianPose();
     /**
      * Construct the pose from a 1x7 vector.
      *
      * @param[in]  pose  Pose vector. [x y z qw qx qy qz]
      */
     CartesianPose(std::vector<double> pose);
+    CartesianPose(double *pose);
     /**
      * Constructs the pose from an Eigen Matrix. T must be either:
      *  a 4x4 homogeneous matrix, or
@@ -238,7 +243,12 @@ namespace RUT
     CartesianPose(const Eigen::Isometry3d &iso);
     CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p);
     CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p);
-    ~CartesianPose(){}
+
+    // other constructors
+    CartesianPose(CartesianPose&& gp);
+    CartesianPose& operator=(CartesianPose&& gp); // move assignment
+    CartesianPose(const CartesianPose &gp); // copy
+    CartesianPose& operator=(const CartesianPose& gp); // copy assignment
 
     static CartesianPose Identity();
 
@@ -286,12 +296,16 @@ namespace RUT
 
     // MISC
     void print() const;
-  public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    void printPose() const;
+  // public:
+  //   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   private:
-    Eigen::Quaterniond q_;
-    Eigen::Vector3d p_;
-    Eigen::Matrix3d R_;
+    double qw_;
+    double qx_;
+    double qy_;
+    double qz_;
+    Eigen::Vector3d *p_;
+    Eigen::Matrix3d *R_;
   };
 
   //

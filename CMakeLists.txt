@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(RobotUtilities)
 set (CMAKE_CXX_FLAGS "--std=gnu++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(include/)
 # include_directories("${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}")

@@ -35,14 +35,20 @@ int main() {
   // std::cout << "Pose 2: " << std::endl;
   // pose2.print();
 
-  Eigen::MatrixXd A(3,3);
-  A << -4.3102,   14.3674,   -3.3332,
-         0,         0,         0,
-    4.3102,   14.3674,   -0.8333;
-  std::cout << "A: \n" << A << std::endl;
-  int r = rowSpace(&A, 1e-10);
-  std::cout << "rank: " << r << std::endl;
-  std::cout << "rowSpace(A): \n" << A << std::endl;
-  std::cout << "A*(A'): \n" << A*A.transpose() << std::endl;
+  // Eigen::MatrixXd A(3,3);
+  // A << -4.3102,   14.3674,   -3.3332,
+  //        0,         0,         0,
+  //   4.3102,   14.3674,   -0.8333;
+  // std::cout << "A: \n" << A << std::endl;
+  // int r = rowSpace(&A, 1e-10);
+  // std::cout << "rank: " << r << std::endl;
+  // std::cout << "rowSpace(A): \n" << A << std::endl;
+  // std::cout << "A*(A'): \n" << A*A.transpose() << std::endl;
+  std::vector<double> pose_temp = {0,0,2,1,0,0,0};
+  CartesianPose testpose, testpose2;
+  testpose = CartesianPose(pose_temp);
+  std::cout << "debug 0" << std::endl;
+  testpose2 = testpose.inv();
+  std::cout << "debug 1" << std::endl;
   return 0;
 }

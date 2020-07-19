@@ -64,7 +64,11 @@ void truncate(double *ele, const double _min, const double _max)
 
 double rand() {
   int std_rand = std::rand();
-  return std_rand/RAND_MAX;
+  return double(std_rand)/double(RAND_MAX);
+}
+int randi(int N) {
+  int std_rand = std::rand();
+  return std_rand % N;
 }
 int srand() {
   int seed = std::time(NULL);
@@ -664,9 +668,9 @@ Eigen::Quaterniond QuatMTimes(const Eigen::Quaterniond &q1,
 }
 
 float angBTquat(const Eigen::Quaternionf &q1, const Eigen::Quaternionf &q2) {
-  Eigen::Quaternionf q_ = QuatMTimes(q1.normalized().inverse(), q2.normalized());
+  Eigen::Quaternionf q = QuatMTimes(q1.normalized().inverse(), q2.normalized());
 
-  float ang = 2.0f*acos(q_.w()); // acos: [0, pi]
+  float ang = 2.0f*acos(q.w()); // acos: [0, pi]
 
   if (ang > PIf){
     ang = 2.0f*PIf - ang;
@@ -701,60 +705,199 @@ double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
   }
 }
 
-// SE(3)
+CartesianPose::CartesianPose() {
+  std::cout << "[CartesianPose] Calling default constructor" << std::endl;
+  // q_ = new Eigen::Quaterniond(1, 0, 0, 0);
+  qw_ = 1;
+  qx_ = 0;
+  qy_ = 0;
+  qz_ = 0;
+  p_ = new Eigen::Vector3d(0, 0, 0);
+  R_ = new Eigen::Matrix3d();
+  std::cout << "[CartesianPose] default constructor finished" << std::endl;
+}
+
+CartesianPose::~CartesianPose() {
+  std::cout << "[CartesianPose] Calling destructor" << std::endl;
+  // delete q_;
+  // std::cout << "[CartesianPose] deleted q_" << std::endl;
+  delete p_;
+  delete R_;
+  std::cout << "[CartesianPose] destructor finished" << std::endl;
+}
+
 CartesianPose::CartesianPose(std::vector<double> pose) {
-  p_[0] = pose[0];
-  p_[1] = pose[1];
-  p_[2] = pose[2];
+  // q_ = new Eigen::Quaterniond();
+  p_ = new Eigen::Vector3d();
+  R_ = new Eigen::Matrix3d();
+  (*p_)[0] = pose[0];
+  (*p_)[1] = pose[1];
+  (*p_)[2] = pose[2];
+  qw_ = pose[3];
+  qx_ = pose[4];
+  qy_ = pose[5];
+  qz_ = pose[6];
   double norm = sqrt(pose[3]*pose[3] + pose[4]*pose[4] + pose[5]*pose[5]
       + pose[6]*pose[6]);
   assert(abs(norm - 1.0) < 0.1);
-  q_.w() = pose[3]/norm;
-  q_.x() = pose[4]/norm;
-  q_.y() = pose[5]/norm;
-  q_.z() = pose[6]/norm;
-  R_ = q_.toRotationMatrix();
+  // q_->w() = pose[3]/norm;
+  // q_->x() = pose[4]/norm;
+  // q_->y() = pose[5]/norm;
+  // q_->z() = pose[6]/norm;
+  Eigen::Quaterniond q = Eigen::Quaterniond(qw_, qx_, qy_, qz_);
+  *R_ = q.toRotationMatrix();
 }
 
+CartesianPose::CartesianPose(double *pose) {
+  // q_ = new Eigen::Quaterniond();
+  p_ = new Eigen::Vector3d();
+  R_ = new Eigen::Matrix3d();
+  (*p_)[0] = pose[0];
+  (*p_)[1] = pose[1];
+  (*p_)[2] = pose[2];
+  double norm = sqrt(pose[3]*pose[3] + pose[4]*pose[4] + pose[5]*pose[5]
+      + pose[6]*pose[6]);
+  assert(abs(norm - 1.0) < 0.1);
+  qw_ = pose[3]/norm;
+  qx_ = pose[4]/norm;
+  qy_ = pose[5]/norm;
+  qz_ = pose[6]/norm;
+  Eigen::Quaterniond q = Eigen::Quaterniond(qw_, qx_, qy_, qz_);
+  *R_ = q.toRotationMatrix();
+}
 
 CartesianPose::CartesianPose(const Eigen::MatrixXd &T) {
+  std::cout << "[CartesianPose] Calling Constructor T" << std::endl;
+  // q_ = new Eigen::Quaterniond();
+  p_ = new Eigen::Vector3d();
+  R_ = new Eigen::Matrix3d();
   if ((T.rows() == 4) && (T.cols() == 4)) {
-    p_ = T.block<3,1>(0,3);
-    R_ = T.block<3,3>(0,0);
-    q_ = Eigen::Quaterniond(R_);
+    *p_ = T.block<3,1>(0,3);
+    *R_ = T.block<3,3>(0,0);
+    Eigen::Quaterniond q = Eigen::Quaterniond(*R_);
+    qw_ = q.w();
+    qx_ = q.x();
+    qy_ = q.y();
+    qz_ = q.z();
   } else if ((T.rows() == 7) && (T.cols() == 1)) {
-    p_[0] = T(0);
-    p_[1] = T(1);
-    p_[2] = T(2);
+    (*p_)[0] = T(0);
+    (*p_)[1] = T(1);
+    (*p_)[2] = T(2);
     double norm = sqrt(T(3)*T(3) + T(4)*T(4) + T(5)*T(5)
         + T(6)*T(6));
     assert(abs(norm - 1.0) < 0.1);
-    q_.w() = T(3)/norm;
-    q_.x() = T(4)/norm;
-    q_.y() = T(5)/norm;
-    q_.z() = T(6)/norm;
-    R_ = q_.toRotationMatrix();
+    qw_ = T(3)/norm;
+    qx_ = T(4)/norm;
+    qy_ = T(5)/norm;
+    qz_ = T(6)/norm;
+    Eigen::Quaterniond q = Eigen::Quaterniond(qw_, qx_, qy_, qz_);
+    *R_ = q.toRotationMatrix();
   } else {
     std::cerr << "[utilities.CartesianPose] wrong input matrix size. " << T.rows() << " x " << T.cols() << std::endl;
   }
+  std::cout << "[CartesianPose] Constructor T finished" << std::endl;
 }
 
 CartesianPose::CartesianPose(const Eigen::Isometry3d &iso) {
-  p_ = iso.translation();
-  R_ = iso.rotation();
-  q_ = Eigen::Quaterniond(R_);
+  // q_ = new Eigen::Quaterniond();
+  p_ = new Eigen::Vector3d();
+  R_ = new Eigen::Matrix3d();
+  *p_ = iso.translation();
+  *R_ = iso.rotation();
+  Eigen::Quaterniond q = Eigen::Quaterniond(*R_);
+  qw_ = q.w();
+  qx_ = q.x();
+  qy_ = q.y();
+  qz_ = q.z();
 }
 
 CartesianPose::CartesianPose(const Eigen::Quaterniond &q, const Eigen::Vector3d &p) {
-  p_ = p;
-  q_ = q;
-  R_ = q_.toRotationMatrix();
+  // q_ = new Eigen::Quaterniond();
+  p_ = new Eigen::Vector3d();
+  R_ = new Eigen::Matrix3d();
+  *p_ = p;
+  qw_ = q.w();
+  qx_ = q.x();
+  qy_ = q.y();
+  qz_ = q.z();
+  *R_ = q.toRotationMatrix();
 }
 
 CartesianPose::CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p) {
-  p_ = p;
-  R_ = R;
-  q_ = Eigen::Quaterniond(R_);
+  // q_ = new Eigen::Quaterniond();
+  p_ = new Eigen::Vector3d();
+  R_ = new Eigen::Matrix3d();
+  *p_ = p;
+  *R_ = R;
+  Eigen::Quaterniond q = Eigen::Quaterniond(*R_);
+  qw_ = q.w();
+  qx_ = q.x();
+  qy_ = q.y();
+  qz_ = q.z();
+}
+
+CartesianPose::CartesianPose(CartesianPose&& pose) :
+      p_(nullptr), R_(nullptr) {
+  std::cout << "[CartesianPose] move constructor" << std::endl;
+  p_ = pose.p_;
+  R_ = pose.R_;
+
+  qw_ = pose.qw_;
+  qx_ = pose.qx_;
+  qy_ = pose.qy_;
+  qz_ = pose.qz_;
+
+  pose.p_ = nullptr;
+  pose.R_ = nullptr;
+  std::cout << "[CartesianPose] move constructor is done." << std::endl;
+}
+
+CartesianPose& CartesianPose::operator=(CartesianPose&& pose) {
+  std::cout << "[CartesianPose] move assignment" << std::endl;
+  if (this != &pose) {
+    // std::cout << "[CartesianPose] move assignment" << std::endl;
+    // std::cout << "[CartesianPose] p_[0]:" << (*p_)[0] << "p_[1]" << (*p_)[1] << std::endl;
+    delete p_;
+    delete R_;
+    p_ = pose.p_;
+    R_ = pose.R_;
+    qw_ = pose.qw_;
+    qx_ = pose.qx_;
+    qy_ = pose.qy_;
+    qz_ = pose.qz_;
+    pose.p_ = nullptr;
+    pose.R_ = nullptr;
+  }
+  std::cout << "[CartesianPose] move assignment is done" << std::endl;
+  return *this;
+} // move assignment
+
+CartesianPose::CartesianPose(const CartesianPose &pose) {
+  std::cout << "[CartesianPose] Calling copy constructor" << std::endl;
+
+  // q_ = new Eigen::Quaterniond();
+  p_ = new Eigen::Vector3d();
+  R_ = new Eigen::Matrix3d();
+  *p_ = *pose.p_;
+  *R_ = *pose.R_;
+  qw_ = pose.qw_;
+  qx_ = pose.qx_;
+  qy_ = pose.qy_;
+  qz_ = pose.qz_;
+  std::cout << "[CartesianPose] Copy constructor finished" << std::endl;
+}
+
+// copy assignment
+CartesianPose& CartesianPose::operator=(const CartesianPose& pose) {
+  std::cout << "[CartesianPose] copy assignment" << std::endl;
+  *p_ = *pose.p_;
+  *R_ = *pose.R_;
+  qw_ = pose.qw_;
+  qx_ = pose.qx_;
+  qy_ = pose.qy_;
+  qz_ = pose.qz_;
+  return *this;
+  std::cout << "[CartesianPose] copy assignment finished" << std::endl;
 }
 
 CartesianPose CartesianPose::Identity() {
@@ -762,79 +905,86 @@ CartesianPose CartesianPose::Identity() {
 }
 
 void CartesianPose::setRotationMatrix(const Eigen::Matrix3d &R) {
-  R_ = R;
-  q_ = Eigen::Quaterniond(R_);
+  *R_ = R;
+  Eigen::Quaterniond q = Eigen::Quaterniond(*R_);
+  qw_ = q.w();
+  qx_ = q.x();
+  qy_ = q.y();
+  qz_ = q.z();
 }
 
 void CartesianPose::setQuaternion(const Eigen::Quaterniond &q) {
-  q_ = q;
-  R_ = q_.toRotationMatrix();
+  qw_ = q.w();
+  qx_ = q.x();
+  qy_ = q.y();
+  qz_ = q.z();
+  *R_ = q.toRotationMatrix();
 }
 
-void CartesianPose::setQuaternion(const std::vector<double> &q) {
-  q_.w() = q[0];
-  q_.x() = q[1];
-  q_.y() = q[2];
-  q_.z() = q[3];
-  R_ = q_.toRotationMatrix();
+void CartesianPose::setQuaternion(const std::vector<double> &q_vec) {
+  qw_ = q_vec[0];
+  qx_ = q_vec[1];
+  qy_ = q_vec[2];
+  qz_ = q_vec[3];
+  Eigen::Quaterniond q = Eigen::Quaterniond(qw_, qx_, qy_, qz_);
+  *R_ = q.toRotationMatrix();
 }
 
 void CartesianPose::setXYZ(const Eigen::Vector3d &p) {
-  p_ = p;
+  *p_ = p;
 }
 
 void CartesianPose::setXYZ(const std::vector<double> &p) {
-  p_[0] = p[0];
-  p_[1] = p[1];
-  p_[2] = p[2];
+  (*p_)[0] = p[0];
+  (*p_)[1] = p[1];
+  (*p_)[2] = p[2];
 }
 
 void CartesianPose::scaleXYZ(double scale) {
-  p_[0] *= scale;
-  p_[1] *= scale;
-  p_[2] *= scale;
+  (*p_)[0] *= scale;
+  (*p_)[1] *= scale;
+  (*p_)[2] *= scale;
 }
 
 Eigen::Matrix3d CartesianPose::getRotationMatrix() const {
-  return R_;
+  return *R_;
 }
 
 Eigen::Quaterniond CartesianPose::getQuaternion() const {
-  return q_;
+  return Eigen::Quaterniond(qw_, qx_, qy_, qz_);
 }
 
 Eigen::Vector3d CartesianPose::getXYZ() const {
-  return p_;
+  return *p_;
 }
 
 Eigen::Vector3d CartesianPose::getXAxis() const {
-  return R_.block<3,1>(0, 0);
+  return R_->block<3,1>(0, 0);
 }
 
 Eigen::Vector3d CartesianPose::getYAxis() const {
-  return R_.block<3,1>(0, 1);
+  return R_->block<3,1>(0, 1);
 }
 
 Eigen::Vector3d CartesianPose::getZAxis() const {
-  return R_.block<3,1>(0, 2);
+  return R_->block<3,1>(0, 2);
 }
-
 
 Eigen::Matrix4d CartesianPose::getTransformMatrix() const{
   Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-  T.block<3, 3>(0, 0) = R_;
-  T.block<3, 1>(0, 3) = p_;
+  T.block<3, 3>(0, 0) = *R_;
+  T.block<3, 1>(0, 3) = *p_;
   return T;
 }
 
 Eigen::Isometry3d CartesianPose::getIsometry3d() const {
   Eigen::Isometry3d transform = Eigen::Translation<double, 3>(
-      p_[0], p_[1], p_[2]) * q_;
+      (*p_)[0], (*p_)[1], (*p_)[2]) * Eigen::Quaterniond(qw_, qx_, qy_, qz_);
   return transform;
 }
 
 std::vector<double> CartesianPose::getVector() const {
-  std::vector<double> vec = {p_[0], p_[1], p_[2], q_.w(), q_.x(), q_.y(), q_.z()};
+  std::vector<double> vec = {(*p_)[0], (*p_)[1], (*p_)[2], qw_, qx_, qy_, qz_};
   return vec;
 }
 
@@ -844,41 +994,55 @@ CartesianPose CartesianPose::operator*(const CartesianPose &pose) const {
 }
 
 CartesianPose CartesianPose::inv() const {
+  std::cout << "[inv] debug: a" << std::endl;
   Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-  T.block<3, 3>(0, 0) = R_.transpose();
-  T.block<3, 1>(0, 3) = -R_.transpose() * p_;
-  return CartesianPose(T);
+  std::cout << "[inv] debug: b" << std::endl;
+  T.block<3, 3>(0, 0) = R_->transpose();
+  std::cout << "[inv] debug: c" << std::endl;
+  T.block<3, 1>(0, 3) = -R_->transpose() * (*p_);
+  std::cout << "[inv] debug: dd" << std::endl;
+  CartesianPose pose(T);
+  std::cout << "[inv] debug: e" << std::endl;
+  return pose;
 }
 
 Eigen::Vector3d CartesianPose::transformVec(const Eigen::Vector3d &v) const {
-  return R_ * v;
+  return (*R_) * v;
 }
 
 Eigen::Vector3d CartesianPose::transformPoint(const Eigen::Vector3d &p) const {
-  return R_*p + p_;
+  return (*R_)*p + (*p_);
 }
 
 Eigen::Quaterniond CartesianPose::transformQuat(const Eigen::Quaterniond &q) const {
   Eigen::Matrix3d R = q.toRotationMatrix();
-  return Eigen::Quaterniond(R_*R);
+  return Eigen::Quaterniond((*R_)*R);
 }
 
 double CartesianPose::distBTPose(const CartesianPose & pose,
     double ratio) const {
-  double angle = angBTquat(q_, pose.q_);
-  double dist = (p_ - pose.p_).norm();
+  Eigen::Quaterniond q1(qw_, qx_, qy_, qz_);
+  Eigen::Quaterniond q2(pose.qw_, pose.qx_, pose.qy_, pose.qz_);
+  double angle = angBTquat(q1, q2);
+  double dist = (*p_ - *pose.p_).norm();
   return angle*ratio + dist;
 }
 
 void CartesianPose::print() const{
   std::cout << "p:\n";
-  std::cout << p_ << std::endl;
+  std::cout << *p_ << std::endl;
   std::cout << "R:\n";
-  std::cout << R_ << std::endl;
+  std::cout << *R_ << std::endl;
   std::cout << "q:\n";
-  std::cout << q_.w() << " " << q_.x() << " "
-      << q_.y() << " " << q_.z() << std::endl;
+  std::cout << qw_ << " " << qx_ << " " << qy_ << " " << qz_ << std::endl;
 }
+
+void CartesianPose::printPose() const{
+  std::cout << p_->transpose() << ", ";
+  std::cout << qw_ << " " << qx_ << " "
+      << qy_ << " " << qz_ << std::endl;
+}
+
 
 void double2float(const double *array_in, float *array_out, int n) {
   for (int i = 0; i < n; ++i)

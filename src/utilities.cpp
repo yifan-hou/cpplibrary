@@ -706,7 +706,6 @@ double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
 }
 
 CartesianPose::CartesianPose() {
-  std::cout << "[CartesianPose] Calling default constructor" << std::endl;
   // q_ = new Eigen::Quaterniond(1, 0, 0, 0);
   qw_ = 1;
   qx_ = 0;
@@ -714,16 +713,13 @@ CartesianPose::CartesianPose() {
   qz_ = 0;
   p_ = new Eigen::Vector3d(0, 0, 0);
   R_ = new Eigen::Matrix3d();
-  std::cout << "[CartesianPose] default constructor finished" << std::endl;
 }
 
 CartesianPose::~CartesianPose() {
-  std::cout << "[CartesianPose] Calling destructor" << std::endl;
   // delete q_;
   // std::cout << "[CartesianPose] deleted q_" << std::endl;
   delete p_;
   delete R_;
-  std::cout << "[CartesianPose] destructor finished" << std::endl;
 }
 
 CartesianPose::CartesianPose(std::vector<double> pose) {
@@ -767,7 +763,6 @@ CartesianPose::CartesianPose(double *pose) {
 }
 
 CartesianPose::CartesianPose(const Eigen::MatrixXd &T) {
-  std::cout << "[CartesianPose] Calling Constructor T" << std::endl;
   // q_ = new Eigen::Quaterniond();
   p_ = new Eigen::Vector3d();
   R_ = new Eigen::Matrix3d();
@@ -795,7 +790,6 @@ CartesianPose::CartesianPose(const Eigen::MatrixXd &T) {
   } else {
     std::cerr << "[utilities.CartesianPose] wrong input matrix size. " << T.rows() << " x " << T.cols() << std::endl;
   }
-  std::cout << "[CartesianPose] Constructor T finished" << std::endl;
 }
 
 CartesianPose::CartesianPose(const Eigen::Isometry3d &iso) {
@@ -838,7 +832,6 @@ CartesianPose::CartesianPose(const Eigen::Matrix3d &R, const Eigen::Vector3d &p)
 
 CartesianPose::CartesianPose(CartesianPose&& pose) :
       p_(nullptr), R_(nullptr) {
-  std::cout << "[CartesianPose] move constructor" << std::endl;
   p_ = pose.p_;
   R_ = pose.R_;
 
@@ -849,14 +842,10 @@ CartesianPose::CartesianPose(CartesianPose&& pose) :
 
   pose.p_ = nullptr;
   pose.R_ = nullptr;
-  std::cout << "[CartesianPose] move constructor is done." << std::endl;
 }
 
 CartesianPose& CartesianPose::operator=(CartesianPose&& pose) {
-  std::cout << "[CartesianPose] move assignment" << std::endl;
   if (this != &pose) {
-    // std::cout << "[CartesianPose] move assignment" << std::endl;
-    // std::cout << "[CartesianPose] p_[0]:" << (*p_)[0] << "p_[1]" << (*p_)[1] << std::endl;
     delete p_;
     delete R_;
     p_ = pose.p_;
@@ -868,13 +857,10 @@ CartesianPose& CartesianPose::operator=(CartesianPose&& pose) {
     pose.p_ = nullptr;
     pose.R_ = nullptr;
   }
-  std::cout << "[CartesianPose] move assignment is done" << std::endl;
   return *this;
 } // move assignment
 
 CartesianPose::CartesianPose(const CartesianPose &pose) {
-  std::cout << "[CartesianPose] Calling copy constructor" << std::endl;
-
   // q_ = new Eigen::Quaterniond();
   p_ = new Eigen::Vector3d();
   R_ = new Eigen::Matrix3d();
@@ -884,12 +870,10 @@ CartesianPose::CartesianPose(const CartesianPose &pose) {
   qx_ = pose.qx_;
   qy_ = pose.qy_;
   qz_ = pose.qz_;
-  std::cout << "[CartesianPose] Copy constructor finished" << std::endl;
 }
 
 // copy assignment
 CartesianPose& CartesianPose::operator=(const CartesianPose& pose) {
-  std::cout << "[CartesianPose] copy assignment" << std::endl;
   *p_ = *pose.p_;
   *R_ = *pose.R_;
   qw_ = pose.qw_;
@@ -897,7 +881,6 @@ CartesianPose& CartesianPose::operator=(const CartesianPose& pose) {
   qy_ = pose.qy_;
   qz_ = pose.qz_;
   return *this;
-  std::cout << "[CartesianPose] copy assignment finished" << std::endl;
 }
 
 CartesianPose CartesianPose::Identity() {
@@ -994,15 +977,10 @@ CartesianPose CartesianPose::operator*(const CartesianPose &pose) const {
 }
 
 CartesianPose CartesianPose::inv() const {
-  std::cout << "[inv] debug: a" << std::endl;
   Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-  std::cout << "[inv] debug: b" << std::endl;
   T.block<3, 3>(0, 0) = R_->transpose();
-  std::cout << "[inv] debug: c" << std::endl;
   T.block<3, 1>(0, 3) = -R_->transpose() * (*p_);
-  std::cout << "[inv] debug: dd" << std::endl;
   CartesianPose pose(T);
-  std::cout << "[inv] debug: e" << std::endl;
   return pose;
 }
 

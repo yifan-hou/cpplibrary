@@ -923,6 +923,17 @@ void CartesianPose::setXYZ(const std::vector<double> &p) {
   (*p_)[2] = p[2];
 }
 
+void CartesianPose::setX(double x) {
+  (*p_)[0] = x;
+}
+void CartesianPose::setY(double y) {
+  (*p_)[1] = y;
+}
+void CartesianPose::setZ(double z) {
+  (*p_)[2] = z;
+}
+
+
 void CartesianPose::scaleXYZ(double scale) {
   (*p_)[0] *= scale;
   (*p_)[1] *= scale;
@@ -939,6 +950,16 @@ Eigen::Quaterniond CartesianPose::getQuaternion() const {
 
 Eigen::Vector3d CartesianPose::getXYZ() const {
   return *p_;
+}
+
+double CartesianPose::getX() const {
+  return (*p_)(0);
+}
+double CartesianPose::getY() const {
+  return (*p_)(1);
+}
+double CartesianPose::getZ() const {
+  return (*p_)(2);
 }
 
 Eigen::Vector3d CartesianPose::getXAxis() const {
@@ -1021,6 +1042,14 @@ void CartesianPose::printPose() const{
       << qy_ << " " << qz_ << std::endl;
 }
 
+std::string CartesianPose::poseString() const{
+  std::string line;
+  std::ostringstream oss(line);
+
+  oss << p_->transpose() << ", " <<  qw_ << " " << qx_ << " "
+      << qy_ << " " << qz_;
+  return line;
+}
 
 void double2float(const double *array_in, float *array_out, int n) {
   for (int i = 0; i < n; ++i)

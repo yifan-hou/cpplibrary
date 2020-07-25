@@ -262,10 +262,16 @@ namespace RUT
     void setQuaternion(const std::vector<double> &q);
     void setXYZ(const Eigen::Vector3d &p);
     void setXYZ(const std::vector<double> &p);
+    void setX(double);
+    void setY(double);
+    void setZ(double);
     void scaleXYZ(double scale);
     Eigen::Matrix3d getRotationMatrix() const;
     Eigen::Quaterniond getQuaternion() const;
     Eigen::Vector3d getXYZ() const;
+    double getX() const;
+    double getY() const;
+    double getZ() const;
     Eigen::Vector3d getXAxis() const;
     Eigen::Vector3d getYAxis() const;
     Eigen::Vector3d getZAxis() const;
@@ -297,6 +303,7 @@ namespace RUT
     // MISC
     void print() const;
     void printPose() const;
+    std::string poseString() const;
   // public:
   //   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   private:

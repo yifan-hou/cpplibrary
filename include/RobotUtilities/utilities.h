@@ -150,7 +150,7 @@ namespace RUT
    * @return     rank of A
    */
   int rowSpace(MatrixXd *A, double TOL = 1e-9);
-
+  int nullSpace(MatrixXd *A, MatrixXd *nullA, double TOL = 1e-9);
   /////////////////////////////////////////////////////////////////////////
   //                          Robotics
   /////////////////////////////////////////////////////////////////////////

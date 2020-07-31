@@ -339,6 +339,69 @@ int rowSpace(MatrixXd *A, double TOL) {
   }
   return m;
 }
+
+int nullSpace(MatrixXd *A, MatrixXd *nullA, double TOL) {
+  int rank = rowSpace(A, TOL);
+  int rows = A->rows();
+  int cols = A->cols();
+  assert(rank <= cols);
+  assert(rank <= rows);
+  if (rank == cols) {
+    *nullA = MatrixXd(0, cols);
+    return rank;
+  }
+  /**
+   * augment A with an identity matrix
+   */
+  MatrixXd A_aug(rank+cols, cols);
+  MatrixXd I = MatrixXd::Identity(cols, cols);
+  A_aug << A->topRows(rank), I;
+  /**
+   * do Gram-Schmidt again
+   */
+  // Loop over the entire matrix.
+  int m = cols;
+  int rows_aug = A_aug.rows();
+  MatrixXd proj;
+  VectorXd norms;
+  MatrixXd pivot_row, ith_row;
+  for (int i = 0; i < m; ++i) {
+    // Find the row with largest norm
+    int k;
+    if (i >= rank) {
+      norms = A_aug.bottomRows(rows_aug-i).rowwise().norm();
+      double p = norms.maxCoeff(&k);
+      if (p <= TOL) {
+        // time to stop
+        m = i;
+        break;
+      }
+      k = k + i;
+    } else {
+      k = i;
+    }
+    // use the kth row to eliminate all other rows
+    pivot_row = A_aug.middleRows(k, 1).rowwise().normalized();
+    proj = I - pivot_row.transpose() * pivot_row;
+    A_aug.bottomRows(rows_aug-i) = A_aug.bottomRows(rows_aug-i)*proj.transpose();
+    // move the kth row to ith row
+    if (k != i) {
+      ith_row = A_aug.middleRows(i, 1);
+      A_aug.middleRows(i, 1) = pivot_row;
+      A_aug.middleRows(k, 1) = ith_row;
+    } else {
+      A_aug.middleRows(i, 1) = pivot_row;
+    }
+  }
+  /**
+   * Read the rows after rank
+   */
+  m = m - rank;
+  *nullA = A_aug.middleRows(rank, m);
+  return rank;
+}
+
+
 /////////////////////////////////////////////////////////////////////////
 //                          Robotics
 /////////////////////////////////////////////////////////////////////////

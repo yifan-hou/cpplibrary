@@ -341,21 +341,28 @@ int rowSpace(MatrixXd *A, double TOL) {
 }
 
 int nullSpace(MatrixXd *A, MatrixXd *nullA, double TOL) {
+  std::cout << "[nullSpace] A:\n" << *A << std::endl;
   int rank = rowSpace(A, TOL);
+  std::cout << "[nullSpace] rank:" << rank << std::endl;
   int rows = A->rows();
   int cols = A->cols();
   assert(rank <= cols);
   assert(rank <= rows);
   if (rank == cols) {
+    std::cout << "[nullSpace] debug 1" << std::endl;
     *nullA = MatrixXd(0, cols);
     return rank;
   }
+  std::cout << "[nullSpace] debug 2" << std::endl;
   /**
    * augment A with an identity matrix
    */
   MatrixXd A_aug(rank+cols, cols);
+  std::cout << "[nullSpace] debug 3" << std::endl;
   MatrixXd I = MatrixXd::Identity(cols, cols);
+  std::cout << "[nullSpace] debug 4" << std::endl;
   A_aug << A->topRows(rank), I;
+  std::cout << "[nullSpace] A_aug:\n" << A_aug << std::endl;
   /**
    * do Gram-Schmidt again
    */
@@ -367,10 +374,13 @@ int nullSpace(MatrixXd *A, MatrixXd *nullA, double TOL) {
   MatrixXd pivot_row, ith_row;
   for (int i = 0; i < m; ++i) {
     // Find the row with largest norm
+    std::cout << "[nullSpace]     iter i:" << i << std::endl;
     int k;
     if (i >= rank) {
       norms = A_aug.bottomRows(rows_aug-i).rowwise().norm();
+      std::cout << "[nullSpace]     norms:" << norms.transpose() << std::endl;
       double p = norms.maxCoeff(&k);
+      std::cout << "[nullSpace]     p:" << p << std::endl;
       if (p <= TOL) {
         // time to stop
         m = i;
@@ -382,15 +392,22 @@ int nullSpace(MatrixXd *A, MatrixXd *nullA, double TOL) {
     }
     // use the kth row to eliminate all other rows
     pivot_row = A_aug.middleRows(k, 1).rowwise().normalized();
+    std::cout << "[nullSpace] pivot_row:\n" << pivot_row << std::endl;
     proj = I - pivot_row.transpose() * pivot_row;
+    std::cout << "[nullSpace] proj:\n" << proj << std::endl;
     A_aug.bottomRows(rows_aug-i) = A_aug.bottomRows(rows_aug-i)*proj.transpose();
+    std::cout << "[nullSpace] A_aug:\n" << A_aug << std::endl;
     // move the kth row to ith row
     if (k != i) {
+      std::cout << "[nullSpace] k!=i" << std::endl;
       ith_row = A_aug.middleRows(i, 1);
+      std::cout << "[nullSpace] ith_row:\n" << ith_row << std::endl;
       A_aug.middleRows(i, 1) = pivot_row;
       A_aug.middleRows(k, 1) = ith_row;
+      std::cout << "[nullSpace] assignment done." << std::endl;
     } else {
       A_aug.middleRows(i, 1) = pivot_row;
+      std::cout << "[nullSpace] assignment done." << std::endl;
     }
   }
   /**
@@ -398,6 +415,7 @@ int nullSpace(MatrixXd *A, MatrixXd *nullA, double TOL) {
    */
   m = m - rank;
   *nullA = A_aug.middleRows(rank, m);
+  std::cout << "[nullSpace] nullA:\n" << *nullA << std::endl;
   return rank;
 }
 
@@ -1106,11 +1124,13 @@ void CartesianPose::printPose() const{
 }
 
 std::string CartesianPose::poseString() const{
-  std::string line;
-  std::ostringstream oss(line);
-
-  oss << p_->transpose() << ", " <<  qw_ << " " << qx_ << " "
-      << qy_ << " " << qz_;
+  std::string line = std::to_string((*p_)[0]) + ", "
+                   + std::to_string((*p_)[1]) + ", "
+                   + std::to_string((*p_)[2]) + " | "
+                   + std::to_string(qw_) + ", "
+                   + std::to_string(qx_) + ", "
+                   + std::to_string(qy_) + ", "
+                   + std::to_string(qz_);
   return line;
 }
 

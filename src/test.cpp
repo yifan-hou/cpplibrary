@@ -26,13 +26,13 @@ int main() {
   // std::cout << "point dist to line 1 = " << dist1 << std::endl;
   // std::cout << "point dist to line 2 = " << dist2 << std::endl;
 
-  std::vector<double> pose_vec = {1,2,3,0,1,0,0};
-  CartesianPose pose = CartesianPose(pose_vec);
-  Eigen::Isometry3d iso = pose.getIsometry3d();
-  CartesianPose pose2 = CartesianPose(iso);
-  std::cout << "Pose 1: " << pose.poseString() << std::endl;
-  std::cout << "Pose 2: " << pose2.poseString() << std::endl;
-  pose2.print();
+  // std::vector<double> pose_vec = {1,2,3,0,1,0,0};
+  // CartesianPose pose = CartesianPose(pose_vec);
+  // Eigen::Isometry3d iso = pose.getIsometry3d();
+  // CartesianPose pose2 = CartesianPose(iso);
+  // std::cout << "Pose 1: " << pose.poseString() << std::endl;
+  // std::cout << "Pose 2: " << pose2.poseString() << std::endl;
+  // pose2.print();
 
   // Eigen::MatrixXd A(2,5);
   // A.setRandom();
@@ -53,5 +53,14 @@ int main() {
   // std::cout << "nullA*(nullA'): \n" << nullA*nullA.transpose() << std::endl;
   // std::cout << "A*NullA: \n" << A*nullA.transpose() << std::endl;
 
+  int size = 2;
+  Eigen::MatrixXd covar(size,size);
+  covar << 1, .5,
+          .5, 1;
+
+  normal_random_variable sample { covar };
+
+  std::cout << sample() << std::endl;
+  std::cout << sample() << std::endl;
   return 0;
 }

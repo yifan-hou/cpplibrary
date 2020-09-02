@@ -82,7 +82,7 @@ namespace RUT
       static std::mt19937 gen{ std::random_device{}() };
       static std::normal_distribution<> dist;
 
-      return mean + transform * Eigen::VectorXd{ mean.size() }.unaryExpr([&](auto x) { return dist(gen); });
+      return mean + transform * Eigen::VectorXd{ mean.size() }.unaryExpr([&](double x) { return dist(gen); });
     }
   };
 

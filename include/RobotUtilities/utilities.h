@@ -25,6 +25,7 @@ namespace RUT
   /////////////////////////////////////////////////////////////////////////
 
   typedef Eigen::Vector3d Vector3d;
+  typedef Eigen::Vector4d Vector4d;
   typedef Eigen::Matrix3d Matrix3d;
   typedef Eigen::Matrix4d Matrix4d;
   typedef Eigen::MatrixXd MatrixXd;
@@ -196,7 +197,7 @@ namespace RUT
 
   Matrix3d wedge(const Vector3d &v);
   Matrix4d wedge6(const Vector6d &t);
-
+  Vector6d vee6(const Matrix4d &T);
   //
   // Transformations
   //
@@ -242,11 +243,29 @@ namespace RUT
   float angBTquat(const Eigen::Quaternionf &q1, const Eigen::Quaternionf &q2);
   double angBTquat(const Eigen::Quaterniond &q1, const Eigen::Quaterniond &q2);
 
+  /**
+   * Compute the quaternion @p qm that is @p angle away from quaternion @p qa
+   * towards @p qb, along the direction of spherical interpolation. If the
+   * distance between qa and qb is smaller than @p angle, return qb. Quaternions
+   * are represented as [qw qx qy qz]. Throw error if qa and qb are exactly 180
+   * degree away.
+   * Modified from:
+   *   http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
+   *
+   * @param[in]  qa     Starting quaternion.
+   * @param[in]  qb     Final quaternion.
+   * @param      qm     The interpolated quaternion.
+   * @param[in]  angle  The angle.
+   *
+   * @return     0 if distance between qa and qb is smaller than @p angle.
+   * Return 1 otherwise.
+   */
+  int SlerpFixAngle(const Vector4d &qa, const Vector4d &qb, Vector4d &qm,
+      float angle);
   //
   // SE(3)
   //
-  class CartesianPose
-  {
+  class CartesianPose {
   public:
     CartesianPose();
     ~CartesianPose();
@@ -293,6 +312,7 @@ namespace RUT
     void scaleXYZ(double scale);
     Eigen::Matrix3d getRotationMatrix() const;
     Eigen::Quaterniond getQuaternion() const;
+    Eigen::Vector4d getQuaternionVec() const;
     Eigen::Vector3d getXYZ() const;
     double getX() const;
     double getY() const;
@@ -307,6 +327,21 @@ namespace RUT
     // operators
     CartesianPose operator*(const CartesianPose &pose) const;
     CartesianPose inv() const;
+    /**
+     * Compute the pose that moves from this pose towards the goal @p pose in
+     * the shortest path (straight line for translation, SLERP direction for
+     * rotation). The distance moved is bounded by @p max_trans and @p
+     * max_rotation.
+     *
+     * @param[in]  pose          The goal pose
+     * @param[in]  max_trans     The maximum translation (unit is the same with
+     *                           XYZ)
+     * @param[in]  max_rotation  The maximum rotation (rad)
+     *
+     * @return     The incremental cartesian pose.
+     */
+    CartesianPose increTowards(const CartesianPose &pose, double max_trans,
+        double max_rotation);
 
     // Transformations
     Eigen::Vector3d transformVec(const Eigen::Vector3d &v) const;

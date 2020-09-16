@@ -430,12 +430,27 @@ Matrix3d wedge(const Vector3d &v) {
 
 Matrix4d wedge6(const Vector6d &t) {
   Matrix4d t_wedge;
-  t_wedge <<   0,   -t(5),   t(4),  t(0),
-  t(5),     0,   -t(3),  t(1),
-  -t(4),   t(3),     0,   t(2),
-  0,     0,     0,     0;
+  t_wedge <<    0,   -t(5),    t(4),   t(0),
+             t(5),       0,   -t(3),   t(1),
+            -t(4),    t(3),       0,   t(2),
+                0,       0,       0,      0;
   return t_wedge;
 }
+
+Vector6d vee6(const Matrix4d &T) {
+  assert((T.block<3,3>(0,0) + T.block<3,3>(0,0).transpose()).norm() < 1e-7);
+  assert(T.bottomRows(1).norm() < 1e-7);
+  Vector6d t_vee;
+  double v1 = T(0, 3);
+  double v2 = T(1, 3);
+  double v3 = T(2, 3);
+  double w1 = T(2, 1);
+  double w2 = T(0, 2);
+  double w3 = T(1, 0);
+  t_vee << v1, v2, v3, w1, w2, w3;
+  return t_vee;
+}
+
 
 // Axis-angle to matrix
 // input:
@@ -768,6 +783,50 @@ double angBTVec(Eigen::Vector3d x, Eigen::Vector3d b,
   }
 }
 
+  int SlerpFixAngle(const Vector4d &qa, const Vector4d &qb, Vector4d &qm,
+      float angle) {
+    assert(abs(qa.norm()-1)<0.01);
+    assert(abs(qb.norm()-1)<0.01);
+
+    // Calculate angle between them.
+    double cosHalfTheta =
+        qa(0) * qb(0) + qa(1) * qb(1) + qa(2) * qb(2) + qa(3) * qb(3);
+    // if qa=qb or qa=-qb then theta = 0 and we can return qa
+    if (abs(cosHalfTheta) >= 1.0){
+      qm(0) = qa(0); qm(1) = qa(1); qm(2) = qa(2);qm(3) = qa(3);
+      return 0;
+    }
+    // Calculate temporary values. acos return [0, PI]
+    double halfTheta = acos(cosHalfTheta);
+
+    // qa-qb is smaller than angle. Return qb
+    if (2*halfTheta < angle) {
+      qm(0) = qb(0); qm(1) = qb(1); qm(2) = qb(2); qm(3) = qb(3);
+      return 0;
+    }
+
+    double sinHalfTheta = sqrt(1.0 - cosHalfTheta*cosHalfTheta);
+    // if theta = 180 degrees then result is not fully defined
+    // throw error
+    if (fabs(sinHalfTheta) < 0.001){
+      // qm(0) = qa(0); qm(1) = qa(1); qm(2) = qa(2);qm(3) = qa(3);
+      std::cout << "[RobotUtilities::SlerpFixAngle] [Commanded orientation is"
+      " 180 deg away from current orientation! ] Motion Stopped." << std::endl;
+      exit(1);
+    }
+
+    angle /=2;
+    double ratioA = sin(halfTheta-angle) / sinHalfTheta;
+    double ratioB = sin(angle) / sinHalfTheta;
+
+    //calculate Quaternion.
+    qm(0) = (qa(0) * ratioA + qb(0) * ratioB);
+    qm(1) = (qa(1) * ratioA + qb(1) * ratioB);
+    qm(2) = (qa(2) * ratioA + qb(2) * ratioB);
+    qm(3) = (qa(3) * ratioA + qb(3) * ratioB);
+    return 1;
+  }
+
 CartesianPose::CartesianPose() {
   // q_ = new Eigen::Quaterniond(1, 0, 0, 0);
   qw_ = 1;
@@ -1011,6 +1070,13 @@ Eigen::Quaterniond CartesianPose::getQuaternion() const {
   return Eigen::Quaterniond(qw_, qx_, qy_, qz_);
 }
 
+Eigen::Vector4d CartesianPose::getQuaternionVec() const {
+  Eigen::Vector4d vec;
+  vec << qw_, qx_, qy_, qz_;
+  return vec;
+}
+
+
 Eigen::Vector3d CartesianPose::getXYZ() const {
   return *p_;
 }
@@ -1066,6 +1132,25 @@ CartesianPose CartesianPose::inv() const {
   T.block<3, 1>(0, 3) = -R_->transpose() * (*p_);
   CartesianPose pose(T);
   return pose;
+}
+
+CartesianPose CartesianPose::increTowards(const CartesianPose &pose,
+    double max_trans, double max_rotation) {
+  // rotation
+  Vector4d q_vec;
+  SlerpFixAngle(this->getQuaternionVec(), pose.getQuaternionVec(), q_vec,
+      max_rotation);
+  // translation
+  Vector3d p0 = this->getXYZ();
+  Vector3d p1 = pose.getXYZ();
+  Vector3d p;
+  if ((p0-p1).norm() < max_trans) {
+    p = p1;
+  } else {
+    p = p0 + (p1 - p0).normalized() * max_trans;
+  }
+  std::vector<double> pose_vec = {p(0), p(1), p(2), q_vec(0), q_vec(1), q_vec(2), q_vec(3)};
+  return CartesianPose(pose_vec);
 }
 
 Eigen::Vector3d CartesianPose::transformVec(const Eigen::Vector3d &v) const {

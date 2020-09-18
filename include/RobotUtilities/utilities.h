@@ -197,6 +197,12 @@ namespace RUT
 
   Matrix3d wedge(const Vector3d &v);
   Matrix4d wedge6(const Vector6d &t);
+  /**
+   * wedge(v) * p = A(p) * v
+   *
+   * @return     4x6 matrix A(p)
+   */
+  MatrixXd wedgeRight6(const Vector4d &p);
   Vector6d vee6(const Matrix4d &T);
   //
   // Transformations

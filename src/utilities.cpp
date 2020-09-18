@@ -437,6 +437,19 @@ Matrix4d wedge6(const Vector6d &t) {
   return t_wedge;
 }
 
+MatrixXd wedgeRight6(const Vector4d &p) {
+  MatrixXd wl(4, 6);
+  double p1 = p(0);
+  double p2 = p(1);
+  double p3 = p(2);
+  double p4 = p(3);
+  wl << p4, 0, 0, 0, p3, -p2,
+        0, p4, 0, -p3, 0, p1,
+        0, 0, p4, p2, -p1, 0,
+        0, 0, 0, 0, 0, 0;
+  return wl;
+}
+
 Vector6d vee6(const Matrix4d &T) {
   assert((T.block<3,3>(0,0) + T.block<3,3>(0,0).transpose()).norm() < 1e-7);
   assert(T.bottomRows(1).norm() < 1e-7);

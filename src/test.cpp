@@ -53,14 +53,19 @@ int main() {
   // std::cout << "nullA*(nullA'): \n" << nullA*nullA.transpose() << std::endl;
   // std::cout << "A*NullA: \n" << A*nullA.transpose() << std::endl;
 
-  int size = 2;
-  Eigen::MatrixXd covar(size,size);
-  covar << 1, .5,
-          .5, 1;
+  /* test sampling */
+  // int size = 2;
+  // Eigen::MatrixXd covar(size,size);
+  // covar << 1, .5,
+  //         .5, 1;
+  // normal_random_variable sample { covar };
+  // std::cout << sample() << std::endl;
+  // std::cout << sample() << std::endl;
 
-  normal_random_variable sample { covar };
-
-  std::cout << sample() << std::endl;
-  std::cout << sample() << std::endl;
+  /* test wedgeright*/
+  Eigen::VectorXd v = Eigen::VectorXd::Random(6);
+  Eigen::VectorXd p = Eigen::VectorXd::Random(4);
+  std::cout << "wedge6(v)*p:\n" << wedge6(v)*p << std::endl;
+  std::cout << "wedgeRight6(p) * v:\n" << wedgeRight6(p) * v << std::endl;
   return 0;
 }

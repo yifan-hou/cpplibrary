@@ -1174,6 +1174,19 @@ Eigen::Vector3d CartesianPose::transformPoint(const Eigen::Vector3d &p) const {
   return (*R_)*p + (*p_);
 }
 
+Eigen::MatrixXd CartesianPose::transformPoints(const Eigen::MatrixXd &ps) const {
+  assert(ps.rows() == 3);
+  int num_points = ps.cols();
+
+  Eigen::MatrixXd ps_transformed = (*R_)*ps;
+  for (int i = 0; i < num_points; ++i) {
+    ps_transformed(0, i) += (*p_)[0];
+    ps_transformed(1, i) += (*p_)[1];
+    ps_transformed(2, i) += (*p_)[2];
+  }
+  return ps_transformed;
+}
+
 Eigen::Quaterniond CartesianPose::transformQuat(const Eigen::Quaterniond &q) const {
   Eigen::Matrix3d R = q.toRotationMatrix();
   return Eigen::Quaterniond((*R_)*R);

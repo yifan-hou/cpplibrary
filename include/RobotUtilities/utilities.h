@@ -160,7 +160,9 @@ namespace RUT
   MatrixXd pseudoInverse(const MatrixXd &a,
     double epsilon = std::numeric_limits<double>::epsilon());
 
-  // compute Reduced row echelon form of A. In place computation.
+  // compute Reduced row echelon form of A, i.e. find a basis, not necessarily
+  // orthogonal, not necessarily unit length.
+  // In place computation.
   // return the rank of A. After the computation, the first rank rows of A are
   // the row space of the input A; the rest of A are zeros.
   // This is basically the Gaussian elimination.
@@ -176,6 +178,16 @@ namespace RUT
    * @return     rank of A
    */
   int rowSpace(MatrixXd *A, double TOL = 1e-9);
+  /**
+   * Compute the nullspace of A. Note it will call rowspace() on A first, so
+   * A will be modified.
+   *
+   * @param      A      { parameter_description }
+   * @param      nullA  The null a
+   * @param[in]  TOL    The tol
+   *
+   * @return     { description_of_the_return_value }
+   */
   int nullSpace(MatrixXd *A, MatrixXd *nullA, double TOL = 1e-9);
   /////////////////////////////////////////////////////////////////////////
   //                          Robotics
@@ -352,6 +364,7 @@ namespace RUT
     // Transformations
     Eigen::Vector3d transformVec(const Eigen::Vector3d &v) const;
     Eigen::Vector3d transformPoint(const Eigen::Vector3d &p) const;
+    Eigen::MatrixXd transformPoints(const Eigen::MatrixXd &ps) const;
     Eigen::Quaterniond transformQuat(const Eigen::Quaterniond &q) const;
 
     // metric

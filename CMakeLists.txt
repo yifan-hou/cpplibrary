@@ -4,7 +4,6 @@ set(CMAKE_BUILD_TYPE Release)
 
 add_compile_options(-std=c++11)
 
-
 include_directories(include/)
 # include_directories("${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}")
 
@@ -29,11 +28,12 @@ target_link_libraries(test_utilities Utilities)
 ## Install ##
 #############
 # headers
+
 install(DIRECTORY include/
-    DESTINATION /usr/local/include/
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
     )
 
 # binaries
 install(TARGETS TimerLinux Utilities
-    DESTINATION /usr/local/lib/${PROJECT_NAME}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}
     )

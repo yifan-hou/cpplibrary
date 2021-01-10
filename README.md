@@ -1,6 +1,8 @@
 # cpplibrary
 Collection of utilities for c++.
 
+Prerequists: Eigen
+
 # Install
 ```
 $ mkdir build & cd build

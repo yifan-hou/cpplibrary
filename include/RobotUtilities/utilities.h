@@ -328,6 +328,7 @@ namespace RUT
     void setY(double);
     void setZ(double);
     void scaleXYZ(double scale);
+
     Eigen::Matrix3d getRotationMatrix() const;
     Eigen::Quaterniond getQuaternion() const;
     Eigen::Vector4d getQuaternionVec() const;

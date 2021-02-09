@@ -342,6 +342,7 @@ namespace RUT
     Eigen::Matrix4d getTransformMatrix() const;
     Eigen::Isometry3d getIsometry3d() const;
     std::vector<double> getVector() const;
+    void getArray(double *array) const; // x y z qw qx qy qz
 
     // operators
     CartesianPose operator*(const CartesianPose &pose) const;

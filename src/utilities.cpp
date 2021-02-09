@@ -1134,6 +1134,17 @@ std::vector<double> CartesianPose::getVector() const {
   return vec;
 }
 
+void CartesianPose::getArray(double *array) const {
+  array[0] = (*p_)[0];
+  array[1] = (*p_)[1];
+  array[2] = (*p_)[2];
+  array[3] = qw_;
+  array[4] = qx_;
+  array[5] = qy_;
+  array[6] = qz_;
+}
+
+
 CartesianPose CartesianPose::operator*(const CartesianPose &pose) const {
   Eigen::Matrix4d T = getTransformMatrix()*pose.getTransformMatrix();
   return CartesianPose(T);

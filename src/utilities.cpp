@@ -22,32 +22,34 @@ namespace RUT
   /////////////////////////////////////////////////////////////////////////
   //                          iostream
   /////////////////////////////////////////////////////////////////////////
-  void stream_array_in(std::ostream &st, double *array, int length)
-  {
-    for (int i = 0; i<length; i++)
-    {
-     st << array[i];
-     st << "\t";
+  void stream_array_in(std::ostream &st, double *array, int length) {
+    for (int i = 0; i<length; i++) {
+     st << array[i] << "\t";
    }
  }
 
- void stream_array_in(std::ostream &st, float *array, int length)
- {
-  for (int i = 0; i<length; i++)
-  {
-   st << array[i];
-   st << "\t";
+ void stream_array_in(std::ostream &st, float *array, int length) {
+  for (int i = 0; i<length; i++) {
+   st << array[i] << "\t";
  }
 }
 
-
-void stream_array_in(std::ostream &st, int *array, int length)
-{
-  for (int i = 0; i<length; i++)
-  {
-   st << array[i];
-   st << "\t";
+void stream_array_in(std::ostream &st, int *array, int length) {
+  for (int i = 0; i<length; i++) {
+   st << array[i] << "\t";
  }
+}
+
+void stream_array_in(std::ostream &st, const std::vector<double> &vec, int length) {
+  for (int i = 0; i < length; ++i) {
+    st << vec[i] << "\t";
+  }
+}
+
+void stream_array_in(std::ostream &st, const Eigen::VectorXd &vec, int length) {
+  for (int i = 0; i < length; ++i) {
+    st << vec[i] << "\t";
+  }
 }
 
     /////////////////////////////////////////////////////////////////////////

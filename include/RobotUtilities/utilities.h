@@ -51,6 +51,8 @@ namespace RUT
   void stream_array_in(std::ostream &st, double *array, int length);
   void stream_array_in(std::ostream &st, float *array, int length);
   void stream_array_in(std::ostream &st, int *array, int length);
+  void stream_array_in(std::ostream &st, const std::vector<double> &vec, int length);
+  void stream_array_in(std::ostream &st, const Eigen::VectorXd &vec, int length);
 
 	/////////////////////////////////////////////////////////////////////////
 	//                          scalar

@@ -1152,6 +1152,10 @@ CartesianPose CartesianPose::operator*(const CartesianPose &pose) const {
   return CartesianPose(T);
 }
 
+Vector3d CartesianPose::operator*(const Vector3d& p) const {
+  return (*R_)*p + (*p_);
+}
+
 CartesianPose CartesianPose::inv() const {
   Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
   T.block<3, 3>(0, 0) = R_->transpose();

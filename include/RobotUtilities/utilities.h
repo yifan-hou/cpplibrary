@@ -348,6 +348,7 @@ namespace RUT
 
     // operators
     CartesianPose operator*(const CartesianPose &pose) const;
+    Vector3d operator*(const Vector3d& p) const;
     CartesianPose inv() const;
     /**
      * Compute the pose that moves from this pose towards the goal @p pose in

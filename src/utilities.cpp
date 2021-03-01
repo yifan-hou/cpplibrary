@@ -685,6 +685,21 @@ Matrix6d JacobianSpt2BodyV(const Matrix3d &R) {
   return Jac;
 }
 
+CartesianPose getFrameFromTwoPoint(const Vector3d &p1, const Vector3d &p2) {
+  //  X: p2-p1
+  //  Y: world Z.cross(X)
+  //  Z: X.cross(Y)
+  Vector3d X = (p2 - p1).normalized();
+  Vector3d Y = Vector3d::UnitZ().cross(X);
+  Vector3d Z = X.cross(Y);
+  Matrix3d R_WC;
+  R_WC << X, Y, Z;
+  Vector3d p_WC = 0.5*(p2 + p1);
+  RUT::CartesianPose pose_WC(R_WC, p_WC);
+  return pose_WC;
+}
+
+
 Eigen::Matrix3d rotX(double angle_rad) {
   Eigen::Vector3d x;
   x << 1, 0, 0;

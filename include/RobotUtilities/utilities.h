@@ -427,6 +427,20 @@ namespace RUT
   //  to body velocity.
   // Jac * spt time derivative = body velocity
   Matrix6d JacobianSpt2BodyV(const Matrix3d &R);
+
+  /**
+   * Compute the contact frame from two contact points.
+   *    X: p2 - p1
+   *    Y: world Z.cross(X)
+   *    Z: X.cross(Y)
+   *    p: center of p1 and p2
+   *
+   * @param[in]  p1    The p1
+   * @param[in]  p2    The p2
+   *
+   * @return     The frame from two point.
+   */
+  CartesianPose getFrameFromTwoPoint(const Vector3d &p1, const Vector3d &p2);
   /////////////////////////////////////////////////////////////////////////
   //                      Motion Planning
   /////////////////////////////////////////////////////////////////////////

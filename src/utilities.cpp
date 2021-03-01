@@ -690,7 +690,7 @@ CartesianPose getFrameFromTwoPoint(const Vector3d &p1, const Vector3d &p2) {
   //  Y: world Z.cross(X)
   //  Z: X.cross(Y)
   Vector3d X = (p2 - p1).normalized();
-  Vector3d Y = Vector3d::UnitZ().cross(X);
+  Vector3d Y = (Vector3d::UnitZ().cross(X)).normalized();
   Vector3d Z = X.cross(Y);
   Matrix3d R_WC;
   R_WC << X, Y, Z;

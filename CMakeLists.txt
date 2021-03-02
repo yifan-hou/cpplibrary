@@ -30,7 +30,7 @@ target_link_libraries(test_utilities Utilities)
 # headers
 
 install(DIRECTORY include/
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
     )
 
 # binaries

@@ -34,6 +34,23 @@ int main() {
   // std::cout << "Pose 2: " << pose2.poseString() << std::endl;
   // pose2.print();
 
+  // Eigen::Quaterniond q = Eigen::Quaterniond(0.1, 0.9, 0.9, 0.1);
+  // MatrixXd R = q.toRotationMatrix();
+  // std::cout << "q: " << q.w() << ", " << q.x() << ", " << q.y() << ", " << q.z() << std::endl;
+  // std::cout << "R:\n" << R << std::endl;
+  // std::cout << "R'*R:\n" << R.transpose()*R << std::endl;
+  // std::cout << "R norm: " << R.norm() << std::endl;
+
+  std::vector<double> pose_vec1 = {0,0,0,1,0,0,0};
+  std::vector<double> pose_vec2 = {0.405014, -0.348191, 0.330936, -0.017058, 0.998968, -0.019972, 0.037051};
+  CartesianPose pose_WGs = CartesianPose(pose_vec1);
+  CartesianPose pose_WT = CartesianPose(pose_vec2);
+  CartesianPose pose_TGs = pose_WT.inv()*pose_WGs;
+  std::cout << "pose_WGs: " << pose_WGs.poseString() << std::endl;
+  std::cout << "pose_WT: " << pose_WT.poseString() << std::endl;
+  std::cout << "pose_WT.inv(): " << pose_WT.inv().poseString() << std::endl;
+  std::cout << "pose_TGs: " << pose_TGs.poseString() << std::endl;
+
   // Eigen::MatrixXd A(2,5);
   // A.setRandom();
   // // A << -4.3102,   14.3674,   -3.3332,
@@ -63,9 +80,9 @@ int main() {
   // std::cout << sample() << std::endl;
 
   /* test wedgeright*/
-  Eigen::VectorXd v = Eigen::VectorXd::Random(6);
-  Eigen::VectorXd p = Eigen::VectorXd::Random(4);
-  std::cout << "wedge6(v)*p:\n" << wedge6(v)*p << std::endl;
-  std::cout << "wedgeRight6(p) * v:\n" << wedgeRight6(p) * v << std::endl;
+  // Eigen::VectorXd v = Eigen::VectorXd::Random(6);
+  // Eigen::VectorXd p = Eigen::VectorXd::Random(4);
+  // std::cout << "wedge6(v)*p:\n" << wedge6(v)*p << std::endl;
+  // std::cout << "wedgeRight6(p) * v:\n" << wedgeRight6(p) * v << std::endl;
   return 0;
 }

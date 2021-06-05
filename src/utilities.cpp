@@ -541,12 +541,27 @@ void so32quat(const Vector3d &so3, double *q) {
   }
 }
 void SO32quat(const Matrix3d &SO3, double *q) {
-  Quaterniond q_eigen(SO3);
-  q_eigen.normalize();
-  q[0] = q_eigen.w();
-  q[1] = q_eigen.x();
-  q[2] = q_eigen.y();
-  q[3] = q_eigen.z();
+  // Eigen implementation assumes input matrix is strictly orthogonal and is not
+  // numerically stable sometimes.
+   Quaterniond q_eigen(SO3);
+   q_eigen.normalize();
+   q[0] = q_eigen.w();
+   q[1] = q_eigen.x();
+   q[2] = q_eigen.y();
+   q[3] = q_eigen.z();
+  // double r11 = SO3(0,0);
+  // double r12 = SO3(0,1);
+  // double r13 = SO3(0,2);
+  // double r21 = SO3(1,0);
+  // double r22 = SO3(1,1);
+  // double r23 = SO3(1,2);
+  // double r31 = SO3(2,0);
+  // double r32 = SO3(2,1);
+  // double r33 = SO3(2,2);
+  // q1_sq = 0.25*(1.0+r11+r22+r33);
+  // q2_sq = 0.25*(1.0+r11-r22-r33);
+  // q3_sq = 0.25*(1.0-r11+r22-r33);
+  // q4_sq = 0.25*(1.0-r11-r22+r33);
 }
 
 Matrix4d pose2SE3(const double *pose) {
@@ -881,17 +896,13 @@ CartesianPose::CartesianPose(std::vector<double> pose) {
   (*p_)[0] = pose[0];
   (*p_)[1] = pose[1];
   (*p_)[2] = pose[2];
-  qw_ = pose[3];
-  qx_ = pose[4];
-  qy_ = pose[5];
-  qz_ = pose[6];
   double norm = sqrt(pose[3]*pose[3] + pose[4]*pose[4] + pose[5]*pose[5]
       + pose[6]*pose[6]);
   assert(abs(norm - 1.0) < 0.1);
-  // q_->w() = pose[3]/norm;
-  // q_->x() = pose[4]/norm;
-  // q_->y() = pose[5]/norm;
-  // q_->z() = pose[6]/norm;
+  qw_ = pose[3]/norm;
+  qx_ = pose[4]/norm;
+  qy_ = pose[5]/norm;
+  qz_ = pose[6]/norm;
   Eigen::Quaterniond q = Eigen::Quaterniond(qw_, qx_, qy_, qz_);
   *R_ = q.toRotationMatrix();
 }
@@ -922,6 +933,11 @@ CartesianPose::CartesianPose(const Eigen::MatrixXd &T) {
     *p_ = T.block<3,1>(0,3);
     *R_ = T.block<3,3>(0,0);
     Eigen::Quaterniond q = Eigen::Quaterniond(*R_);
+    if (fabs(q.norm() - 1) > 0.1) {
+      std::cout << "[cpplibrary] Error: input matrix is not orthonormal." << std::endl;
+      std::cout << "R:\n" << *R_ << std::endl;
+      std::cout << "R'*R:\n" << R_->transpose()*(*R_) << std::endl;
+    }
     qw_ = q.w();
     qx_ = q.x();
     qy_ = q.y();

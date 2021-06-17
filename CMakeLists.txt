@@ -7,8 +7,12 @@ add_compile_options(-std=c++11)
 include_directories(include/)
 # include_directories("${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}")
 
-include_directories(/usr/include/eigen3)
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
+find_package(libInterpolate REQUIRED)
+add_executable( interpolation2 src/interpolation2.cpp )
+target_link_libraries( interpolation2 libInterpolate::Interpolate )
 
 ###########
 ## Build ##
@@ -24,6 +28,7 @@ add_library(Utilities SHARED
 add_executable(test_utilities src/test.cpp)
 target_link_libraries(test_utilities Utilities)
 
+add_executable(interpolation src/interpolation.cpp)
 #############
 ## Install ##
 #############

@@ -880,6 +880,7 @@ CartesianPose::CartesianPose() {
   qz_ = 0;
   p_ = new Eigen::Vector3d(0, 0, 0);
   R_ = new Eigen::Matrix3d();
+  *R_ = Eigen::Matrix3d::Identity();
 }
 
 CartesianPose::~CartesianPose() {

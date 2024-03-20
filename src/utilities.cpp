@@ -573,6 +573,15 @@ Matrix4d pose2SE3(const double *pose) {
   return SE3;
 }
 
+Matrix4d pose2SE3(const Vector7d& pose) {
+  Matrix4d SE3 = Matrix4d::Identity();
+  SE3(0, 3) = pose[0];
+  SE3(1, 3) = pose[1];
+  SE3(2, 3) = pose[2];
+  SE3.block<3,3>(0,0) = quat2SO3(pose[3], pose[4], pose[5], pose[6]);
+  return SE3;
+}
+
 Matrix4d posemm2SE3(const double *pose) {
   Matrix4d SE3 = Matrix4d::Identity();
   SE3(0, 3) = pose[0]/1000.0;

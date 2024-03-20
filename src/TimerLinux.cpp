@@ -1,7 +1,5 @@
 #include "RobotUtilities/TimerLinux.h"
 
-typedef std::chrono::high_resolution_clock Clock;
-
 namespace RUT {
 Timer::Timer()
 {

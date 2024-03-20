@@ -6,6 +6,9 @@
 
 namespace RUT {
 
+typedef std::chrono::high_resolution_clock Clock;
+typedef Clock::time_point TimePoint;
+
 class Timer
 {
 public:
@@ -16,8 +19,8 @@ public:
 	double toc(); // return ms
 
 private:
-	std::chrono::high_resolution_clock::time_point _t1;
-	std::chrono::high_resolution_clock::time_point _t2;
+	TimePoint _t1;
+	TimePoint _t2;
 };
 
 }

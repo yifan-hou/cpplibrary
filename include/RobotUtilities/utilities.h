@@ -230,6 +230,7 @@ namespace RUT
   void so32quat(const Vector3d &so3, double *q);
   void SO32quat(const Matrix3d &SO3, double *q);
   Matrix4d pose2SE3(const double *pose);
+  Matrix4d pose2SE3(const Vector7d& pose);
   Matrix4d posemm2SE3(const double *pose);
   Matrix4d se32SE3(const Vector6d &twist);
   Matrix4d spt2SE3(const Vector6d &spt);

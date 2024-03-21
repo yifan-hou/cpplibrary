@@ -15,12 +15,21 @@ public:
 	Timer();
 	~Timer();
 
+	// time measurement functions
 	void tic();
-	double toc(); // return ms
+	double toc_ms(); // return ms
+
+	// timed loop
+	bool set_loop_rate_hz(double hz);
+	bool start_timed_loop();
+	bool sleep_till_next();
 
 private:
 	TimePoint _t1;
 	TimePoint _t2;
+	TimePoint _next_loop_start_t;
+	std::chrono::duration<double> _loop_duration_s;
+
 };
 
 }

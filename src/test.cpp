@@ -1,4 +1,5 @@
 #include "RobotUtilities/utilities.h"
+#include "RobotUtilities/TimerLinux.h"
 #include <Eigen/Geometry>
 
 using namespace RUT;
@@ -84,5 +85,16 @@ int main() {
   // Eigen::VectorXd p = Eigen::VectorXd::Random(4);
   // std::cout << "wedge6(v)*p:\n" << wedge6(v)*p << std::endl;
   // std::cout << "wedgeRight6(p) * v:\n" << wedgeRight6(p) * v << std::endl;
+
+  RUT::Timer timer;
+  timer.set_loop_rate_hz(500.);
+  timer.start_timed_loop();
+  timer.tic();
+  int count = 0;
+  while (count < 1000) {
+    std::cout << "time: " << timer.toc_ms() << std::endl;
+    timer.sleep_till_next();
+  }
+
   return 0;
 }

@@ -22,7 +22,7 @@ add_library(Utilities SHARED
 )
 
 add_executable(test_utilities src/test.cpp)
-target_link_libraries(test_utilities Utilities)
+target_link_libraries(test_utilities TimerLinux Utilities)
 
 #############
 ## Install ##

@@ -19,6 +19,7 @@ class Timer {
 
   // duration measurement
   void tic();
+  void tic(const TimePoint& time_point);
   double toc_ms();  // return ms
 
   // timed loop

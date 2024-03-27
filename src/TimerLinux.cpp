@@ -17,6 +17,8 @@ TimePoint Timer::now() { return Clock::now(); }
 
 void Timer::tic() { _t1 = Clock::now(); }
 
+void Timer::tic(const TimePoint& time_point) { _t1 = time_point; }
+
 double Timer::toc_ms() {
   _t2 = Clock::now();
   return double(std::chrono::duration_cast<std::chrono::nanoseconds>(_t2 - _t1)

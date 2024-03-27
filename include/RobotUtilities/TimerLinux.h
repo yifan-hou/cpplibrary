@@ -6,7 +6,7 @@
 
 namespace RUT {
 
-typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::steady_clock Clock;
 typedef Clock::time_point TimePoint;
 
 class Timer {
@@ -14,7 +14,10 @@ class Timer {
   Timer();
   ~Timer();
 
-  // time measurement functions
+  // return epoch time
+  TimePoint now();
+
+  // duration measurement
   void tic();
   double toc_ms();  // return ms
 

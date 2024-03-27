@@ -13,6 +13,8 @@ Timer::Timer() {
 
 Timer::~Timer() {}
 
+TimePoint Timer::now() { return Clock::now(); }
+
 void Timer::tic() { _t1 = Clock::now(); }
 
 double Timer::toc_ms() {

@@ -434,6 +434,34 @@ Vector6d vee6(const Matrix4d &T) {
   return t_vee;
 }
 
+void rpy2quat(double roll, double pitch, double yaw, RUT::Vector4d &quat) {
+  double cr = cos(roll * 0.5);
+  double sr = sin(roll * 0.5);
+  double cp = cos(pitch * 0.5);
+  double sp = sin(pitch * 0.5);
+  double cy = cos(yaw * 0.5);
+  double sy = sin(yaw * 0.5);
+
+  quat[0] = cr * cp * cy + sr * sp * sy;
+  quat[1] = sr * cp * cy - cr * sp * sy;
+  quat[2] = cr * sp * cy + sr * cp * sy;
+  quat[3] = cr * cp * sy - sr * sp * cy;
+}
+
+void rpy2quat(double roll, double pitch, double yaw, double *quat) {
+  double cr = cos(roll * 0.5);
+  double sr = sin(roll * 0.5);
+  double cp = cos(pitch * 0.5);
+  double sp = sin(pitch * 0.5);
+  double cy = cos(yaw * 0.5);
+  double sy = sin(yaw * 0.5);
+
+  quat[0] = cr * cp * cy + sr * sp * sy;
+  quat[1] = sr * cp * cy - cr * sp * sy;
+  quat[2] = cr * sp * cy + sr * cp * sy;
+  quat[3] = cr * cp * sy - sr * sp * cy;
+}
+
 // Axis-angle to matrix
 // input:
 //   theta: scalar

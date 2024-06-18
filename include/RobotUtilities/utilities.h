@@ -219,6 +219,9 @@ Matrix4d wedge6(const Vector6d &t);
  */
 MatrixXd wedgeRight6(const Vector4d &p);
 Vector6d vee6(const Matrix4d &T);
+void rpy2quat(double roll, double pitch, double yaw, RUT::Vector4d &quat);
+void rpy2quat(double roll, double pitch, double yaw, double *quat);
+
 //
 // Transformations
 //

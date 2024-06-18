@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.10)
 project(RobotUtilities)
 set(CMAKE_BUILD_TYPE Release)
 
@@ -35,5 +35,5 @@ install(DIRECTORY include/
 
 # binaries
 install(TARGETS TimerLinux Utilities
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/
     )

@@ -21,6 +21,7 @@ class Timer {
   void tic();
   void tic(const TimePoint& time_point);
   double toc_ms();  // return ms
+  TimePoint toc_time_point();  // return TimePoint
 
   // timed loop
   bool set_loop_rate_hz(double hz);

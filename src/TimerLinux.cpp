@@ -26,6 +26,10 @@ double Timer::toc_ms() {
          1e6;  // milli second
 }
 
+TimePoint Timer::toc_time_point() {
+  return Clock::now();
+}
+
 bool Timer::set_loop_rate_hz(double hz) {
   if (hz <= 0) {
     std::cerr << "[Timer] Error: rate must be a positive number." << std::endl;

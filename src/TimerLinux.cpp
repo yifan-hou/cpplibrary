@@ -15,7 +15,10 @@ Timer::~Timer() {}
 
 TimePoint Timer::now() { return Clock::now(); }
 
-void Timer::tic() { _t1 = Clock::now(); }
+TimePoint Timer::tic() {
+  _t1 = Clock::now();
+  return _t1;
+}
 
 void Timer::tic(const TimePoint& time_point) { _t1 = time_point; }
 
@@ -24,10 +27,6 @@ double Timer::toc_ms() {
   return double(std::chrono::duration_cast<std::chrono::nanoseconds>(_t2 - _t1)
                     .count()) /
          1e6;  // milli second
-}
-
-TimePoint Timer::toc_time_point() {
-  return Clock::now();
 }
 
 bool Timer::set_loop_rate_hz(double hz) {

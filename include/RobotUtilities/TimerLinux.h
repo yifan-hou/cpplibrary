@@ -14,14 +14,21 @@ class Timer {
   Timer();
   ~Timer();
 
-  // return epoch time
+  /*
+   *  return epoch time
+   */
   TimePoint now();
 
-  // duration measurement
-  void tic();
+  /*
+   *  duration measurement
+   */
+
+  /// @brief Start the timer now. Return the TimePoint of the current time.
+  TimePoint tic();
+  /// @brief Start the timer from a given time point, as if the timer was tic'ed at that time.
+  /// This is used to synchronize multiple timers.
   void tic(const TimePoint& time_point);
   double toc_ms();  // return ms
-  TimePoint toc_time_point();  // return TimePoint
 
   // timed loop
   bool set_loop_rate_hz(double hz);

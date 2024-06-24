@@ -437,18 +437,19 @@ Vector6d vee6(const Matrix4d& T) {
   return t_vee;
 }
 
-void rpy2quat(double roll, double pitch, double yaw, RUT::Vector4d& quat) {
+RUT::Vector4d rpy2quat(double roll, double pitch, double yaw) {
   double cr = cos(roll * 0.5);
   double sr = sin(roll * 0.5);
   double cp = cos(pitch * 0.5);
   double sp = sin(pitch * 0.5);
   double cy = cos(yaw * 0.5);
   double sy = sin(yaw * 0.5);
-
+  RUT::Vector4d quat;
   quat[0] = cr * cp * cy + sr * sp * sy;
   quat[1] = sr * cp * cy - cr * sp * sy;
   quat[2] = cr * sp * cy + sr * cp * sy;
   quat[3] = cr * cp * sy - sr * sp * cy;
+  return quat;
 }
 
 void rpy2quat(double roll, double pitch, double yaw, double* quat) {

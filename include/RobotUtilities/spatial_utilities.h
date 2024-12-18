@@ -26,6 +26,8 @@ namespace RUT {
 //                   types and static variables
 /////////////////////////////////////////////////////////////////////////
 
+typedef Eigen::Matrix<double, 1, 1> Vector1d;
+typedef Eigen::Vector2d Vector2d;
 typedef Eigen::Vector3d Vector3d;
 typedef Eigen::Vector4d Vector4d;
 typedef Eigen::Matrix3d Matrix3d;
@@ -37,6 +39,8 @@ typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 typedef Eigen::Quaterniond Quaterniond;
 typedef Eigen::Matrix<double, 7, 1> Vector7d;
 
+typedef Eigen::Matrix<float, 1, 1> Vector1f;
+typedef Eigen::Vector2f Vector2f;
 typedef Eigen::Vector3f Vector3f;
 typedef Eigen::Matrix3f Matrix3f;
 typedef Eigen::Matrix4f Matrix4f;

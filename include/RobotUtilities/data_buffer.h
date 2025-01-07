@@ -75,7 +75,11 @@ template <class T>
 class DataBuffer : public DataBufferBase<T> {
  public:
   const T get_last_k(int k) {
-    assert(this->_buffer.size() >= k);
+    if (this->_buffer.size() < k) {
+      throw std::runtime_error(
+          "Buffer size: " + std::to_string(this->_buffer.size()) +
+          " is less than query size: " + std::to_string(k));
+    }
     T result(this->_nrows, this->_ncols * k);
     int start_id = this->_buffer_size - k;
     for (int i = 0; i < k; i++) {
@@ -94,7 +98,11 @@ class DataBuffer<double> : public DataBufferBase<double> {
   /// @param k
   /// @return Data concatenated in the column direction: [data_1, data_2, ..., data_k]
   const Eigen::VectorXd get_last_k(int k) {
-    assert(this->_buffer.size() >= k);
+    if (this->_buffer.size() < k) {
+      throw std::runtime_error(
+          "Buffer size: " + std::to_string(this->_buffer.size()) +
+          " is less than query size: " + std::to_string(k));
+    }
     Eigen::VectorXd result(k);
     int start_id = this->_buffer_size - k;
     for (int i = 0; i < k; i++) {
@@ -111,7 +119,11 @@ class DataBuffer<Eigen::VectorXd> : public DataBufferBase<Eigen::VectorXd> {
   /// @param k
   /// @return Data concatenated in the column direction: [data_1, data_2, ..., data_k]
   const Eigen::MatrixXd get_last_k(int k) {
-    assert(this->_buffer.size() >= k);
+    if (this->_buffer.size() < k) {
+      throw std::runtime_error(
+          "Buffer size: " + std::to_string(this->_buffer.size()) +
+          " is less than query size: " + std::to_string(k));
+    }
     Eigen::MatrixXd result(this->_nrows, k);
     int start_id = this->_buffer_size - k;
     for (int i = 0; i < k; i++) {

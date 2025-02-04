@@ -43,6 +43,7 @@ class Timer {
   TimePoint _t1;
   TimePoint _t2;
   TimePoint _next_loop_start_t;
+  TimePoint _expect_next_loop_start_t;
   std::chrono::duration<double> _loop_duration_s;
 };
 

@@ -55,10 +55,11 @@ bool Timer::sleep_till_next() {
 }
 
 double Timer::check_for_overrun_ms(bool accumulative) {
-  _next_loop_start_t +=
+  _expect_next_loop_start_t =
+      _next_loop_start_t +
       std::chrono::duration_cast<std::chrono::nanoseconds>(_loop_duration_s);
   double overrun = double(std::chrono::duration_cast<std::chrono::nanoseconds>(
-                              Clock::now() - _next_loop_start_t)
+                              Clock::now() - _expect_next_loop_start_t)
                               .count()) /
                    1e6;
   if ((overrun > 0) && !accumulative) {

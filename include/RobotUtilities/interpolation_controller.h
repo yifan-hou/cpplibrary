@@ -1,6 +1,8 @@
 #pragma once
 #include <Eigen/Dense>
 
+#include "RobotUtilities/spatial_utilities.h"
+
 #define GAP_T_SEC 0.1
 
 namespace RUT {
@@ -23,13 +25,17 @@ class TaskSpaceInterpolationController {
     _quat1 = Eigen::Quaterniond(pose0(3), pose0(4), pose0(5), pose0(6));
     _time0 = time0;
     _time1 = time0;
+    _SE30 = pose2SE3(_pos0, _quat0);
+    _SE31 = pose2SE3(_pos1, _quat1);
+    _output_vel = Eigen::Vector6d::Zero();
   }
 
   // Try to get the control at time t, as a linear interpolation between target0 and target1.
   // t should never be less than _time0.
   // If t is smaller than _time1, the target is interpolated between _target0 and _target1.
   // If t is larger than _time1, return false. The outter loop should call set_new_target to update the target.
-  bool get_control(double t, Eigen::Ref<Eigen::VectorXd> output) {
+  bool get_control(double t, Eigen::Ref<Eigen::VectorXd> output,
+                   std::optional<Eigen::Ref<Eigen::VectorXd>> output_vel) {
     assert(t >= _time0);
     if (t > _time1) {
       return false;
@@ -43,6 +49,11 @@ class TaskSpaceInterpolationController {
     output(4) = _output_quat.x();
     output(5) = _output_quat.y();
     output(6) = _output_quat.z();
+
+    // optionally return the velocity
+    if (output_vel.has_value()) {
+      output_vel.value() = _output_vel;
+    }
 
     return true;
   }
@@ -66,6 +77,7 @@ class TaskSpaceInterpolationController {
     // now new_time > _time1
     _pos0 = _pos1;
     _quat0 = _quat1;
+    _SE30 = _SE31;
     _time0 = _time1;
 
     _pos1 = new_target.head<3>();
@@ -73,12 +85,15 @@ class TaskSpaceInterpolationController {
     _quat1.x() = new_target(4);
     _quat1.y() = new_target(5);
     _quat1.z() = new_target(6);
+    _SE31 = pose2SE3(_pos1, _quat1);
     _time1 = new_time;
     // std::cout << "[TaskSpaceInterpolationController] new: time 0 = " << _time0
     //           << ", time 1 = " << _time1 << std::endl;
     // std::cout << "[TaskSpaceInterpolationController] new: pos 0 = " << _pos0.transpose()
     //           << ", pos 1 = " << _pos1.transpose() << std::endl;
 
+    // compute the velocity
+    _output_vel = SE32se3(SE3Inv(_SE30) * _SE31) / (_time1 - _time0);
     return true;
   }
 
@@ -89,6 +104,7 @@ class TaskSpaceInterpolationController {
     _quat0 = _quat1;
     _time0 = _time1;
     _time1 = new_time + GAP_T_SEC;
+    _output_vel = Eigen::Vector6d::Zero();
     return true;
   }
 
@@ -98,6 +114,10 @@ class TaskSpaceInterpolationController {
   Eigen::Quaterniond _quat0;
   Eigen::Quaterniond _quat1;
   Eigen::Quaterniond _output_quat;
+  // used for velocity computation
+  Eigen::Matrix4d _SE30;
+  Eigen::Matrix4d _SE31;
+  Eigen::Vector6d _output_vel;
   double _time0;
   double _time1;
 };

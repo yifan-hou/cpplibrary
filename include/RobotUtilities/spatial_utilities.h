@@ -275,6 +275,8 @@ void SO32quat(const Matrix3d& SO3, Eigen::Ref<RUT::Vector4d> q);
 void SO32quat(const Matrix3d& SO3, double* q);
 Matrix4d pose2SE3(const double* pose);
 Matrix4d pose2SE3(const Vector7d& pose);
+Matrix4d pose2SE3(const Vector3d& pos, const Quaterniond& quat);
+Matrix4d pose2SE3(const Vector3d& pos, const Vector4d& quat);
 Matrix4d posemm2SE3(const double* pose);
 Matrix4d se32SE3(const Vector6d& twist);
 Matrix4d spt2SE3(const Vector6d& spt);

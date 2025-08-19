@@ -65,6 +65,11 @@ int main() {
   // }
 
   // test: integrate the twist between two SE3 as velocity
+  std::cout << "================= Integrate twist =================="
+            << std::endl;
+  std::cout << "Integrate the twist between two SE3 as velocity." << std::endl;
+  std::cout << "The integration is performed for a duration of 1," << std::endl;
+  std::cout << "The distance should just go to zero." << std::endl;
   delta_translation << 1, 2, 3;
   delta_rotation = rotX(1) * rotY(2) * rotZ(3);
   SE3_delta.block<3, 3>(0, 0) = delta_rotation;
@@ -77,10 +82,11 @@ int main() {
 
   Matrix4d SE3_new = SE3_1;
   int N = 2000;
-  double dt = 0.001;
+  double dt = 1.0 / N;
   double distance = 0;
   for (int i = 0; i < N; i++) {
-    SE3_new += dt * SE3_new * wedge6(spt);
+    SE3_new += dt * SE3_new * wedge6(twist);
+    // SE3_new += dt * SE3_new * wedge6(spt);
     distance += dt * spt.norm();
 
     double dp = (SE3_new.block<3, 1>(0, 3) - SE3_2.block<3, 1>(0, 3)).norm();

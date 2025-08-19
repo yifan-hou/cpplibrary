@@ -27,7 +27,7 @@ class TaskSpaceInterpolationController {
     _time1 = time0;
     _SE30 = pose2SE3(_pos0, _quat0);
     _SE31 = pose2SE3(_pos1, _quat1);
-    _output_vel = Eigen::Vector6d::Zero();
+    _output_vel = RUT::Vector6d::Zero();
   }
 
   // Try to get the control at time t, as a linear interpolation between target0 and target1.
@@ -104,7 +104,7 @@ class TaskSpaceInterpolationController {
     _quat0 = _quat1;
     _time0 = _time1;
     _time1 = new_time + GAP_T_SEC;
-    _output_vel = Eigen::Vector6d::Zero();
+    _output_vel = RUT::Vector6d::Zero();
     return true;
   }
 
@@ -117,7 +117,7 @@ class TaskSpaceInterpolationController {
   // used for velocity computation
   Eigen::Matrix4d _SE30;
   Eigen::Matrix4d _SE31;
-  Eigen::Vector6d _output_vel;
+  RUT::Vector6d _output_vel;
   double _time0;
   double _time1;
 };
